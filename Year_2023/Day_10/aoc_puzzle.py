@@ -20,6 +20,24 @@ UUCODE_TABLE = {
     'F': '\u250d',
 }
 
+START_CHAR = '|'
+START_CHAR_TST = '7'
+
+START_ORI = {
+    'out_x': 1,
+    'out_y': 0,
+    'in_x': -1,
+    'in_y': 0,
+}
+
+START_ORI_TST = {
+    'out_x': 1,
+    'out_y': -1,
+    'in_x': -1,
+    'in_y': 1,
+}
+
+
 # Global variables
 
 class Gv():
@@ -38,15 +56,17 @@ class Pipe():
 
         if char == 'S':
             if test:
-                self.char = '7'
+                self.char = START_CHAR_TST
             else:
-                self.char = '|'
+                self.char = START_CHAR
             self.start = True
-            self.distance = 0 
+            self.distance = 0
+            self.status = 'L'
         else:
             self.char = char
             self.start = False
             self.distance = -1
+            self.status = 'U'
 
 
     def set_relations(self, grid) -> None:
@@ -113,14 +133,20 @@ class Grid():
                 self.pipes[x,y].set_relations(self)
 
 
-    def get_max_distance(self) -> None:
+    def get_max_distance(self, test=False) -> None:
         for i in range(2):
             self.discover_path(i)
 
 
-    def discover_path(self, i: int) -> None:
+    def discover_path(self, i: int, test=False) -> None:
         steps = 1
         prev_pipe = self.start
+
+        if test:
+            prev_pipe.ori = START_ORI_TST
+        else:
+            prev_pipe.ori = START_ORI
+
         cur_pipe = prev_pipe.neighbors[i]
 
         while True:
@@ -153,6 +179,10 @@ class Grid():
         for y in range(self.y_size):
             line = ''
             for x in range(self.x_size):
+                if self.pipes[x,y].start:
+                    line += 'S'
+                    continue
+
                 distance = self.pipes[x,y].distance
                 if distance < 0:
                     line += '.'
@@ -167,7 +197,7 @@ def get_solution_part1(lines: list[str], test=False) -> int:
 
     grid = Grid(lines,test=test)
     grid.set_relations()
-    grid.get_max_distance()
+    grid.get_max_distance(test=test)
 
     # grid.print_distances()
     grid.print_map()
@@ -180,15 +210,6 @@ def get_solution_part1(lines: list[str], test=False) -> int:
 def get_solution_part2(lines: list[str], test=False) -> int:
     '''Main function'''
 
-    map = []
-
-    for line in lines:
-        for char in line:
-            map.append(char)
-
-    pprint(map)
-
-    return map.count('I')
 
     return 'part_2 ' + __name__
 
