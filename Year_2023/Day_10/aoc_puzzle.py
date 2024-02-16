@@ -103,13 +103,53 @@ class Pipe():
                 self.neighbors.append(grid.pipes[nb_x[i],nb_y[i]])
 
 
-
     def get_next_pipe(self, prev_pipe):
         for nb in self.neighbors:
             # if (nb.x, nb.y) != (prev_pipe.x, prev_pipe.y):
             if nb != prev_pipe:
                 return nb
 
+
+    def set_neighbor_status(self, grid) -> None:
+        '''Set neighbors status as either Inside or Outside'''
+        if self.char == '|' or self.char == '-':
+            self._set_neighbor_status_straight(grid)
+
+
+    def _set_neighbor_status_straight(self, grid) -> None:
+        '''In case of "|" or "-"'''
+        # First Inside
+        nb_x = self.x + self.ori['in_x']
+        nb_y = self.y + self.ori['in_y']
+        self._set_nb_io(nb_x, nb_y, 'I', grid)
+
+        # Then Outside
+        nb_x = self.x + self.ori['out_x']
+        nb_y = self.y + self.ori['out_y']
+        self._set_nb_io(nb_x, nb_y, 'O', grid)
+
+
+    def _set_neighbor_status_ne(self, grid) -> None:
+        '''in case of "L"'''
+        if self.ori['in_x'] == -1:
+            io = 'I'
+        else:
+            io = 'O'
+
+        nb_x = self.x - 1
+        nb_y = self.y
+        self._set_nb_io(nb_x, nb_y, io, grid)
+
+        nb_x = self.x
+        nb_y = self.y + 1
+        self._set_nb_io(nb_x, nb_y, io, grid)
+
+
+    def _set_nb_io(self, nb_x, nb_y, io, grid) -> None:
+        if nb_x >= 0 and nb_x < grid.x_size and \
+            nb_y >= 0 and nb_y < grid.y_size:
+            if grid.pipes[nb_x,nb_y].status == 'U':
+                grid.pipes[nb_x,nb_y].status = io
 
 
 class Grid():
@@ -146,6 +186,8 @@ class Grid():
             prev_pipe.ori = START_ORI_TST
         else:
             prev_pipe.ori = START_ORI
+
+        prev_pipe.set_neighbor_status(self)
 
         cur_pipe = prev_pipe.neighbors[i]
 
@@ -210,6 +252,11 @@ def get_solution_part1(lines: list[str], test=False) -> int:
 def get_solution_part2(lines: list[str], test=False) -> int:
     '''Main function'''
 
+    grid = Grid(lines,test=test)
+    grid.set_relations()
+    grid.get_max_distance(test=test)
+
+    return [p.status for p in grid.pipes.flat].count('I')
 
     return 'part_2 ' + __name__
 
