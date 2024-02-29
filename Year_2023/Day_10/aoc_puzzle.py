@@ -3,16 +3,34 @@ Year 2023, Day 10
 
 Problem description: See https://adventofcode.com/2023/day/10
 
+For this puzzle I created a Grid class, which is a matrix containing Pipe objects.
+The Pipe object can have two connecting neighbors, depending on the shape.
+The idea of part 1 is to go to each connecting neighbor until you find the start
+again. To calculate the farthest point, you go back the same way to reset the
+distance to the starting point if necessarry.
+
+For part 2, we have to define the inside of the loop and the outside. For this,
+I added a orientation field describing which x and which y direction the inside
+and outside is. We then go through the loop as in part 1, keeping track of the orientation
+and setting the status of the inside and outside.
+At the end, I fill the inside pipes which are not directly connected to the loop.
+
 """
 
 # Imports
 from pprint import pprint
 import numpy as np
+import sys
+
+# Raise recurion limit for the flood function
+sys.setrecursionlimit(3000)
 
 # Constants
 
-MAX_ROUNDS = 25
+# Use for debugging
+MAX_ROUNDS = 13
 
+# Used to visiolise the pipe, which helps with trouble shooting
 UUCODE_TABLE = {
     '|': '\u2502',
     '-': '\u2501',
@@ -22,9 +40,11 @@ UUCODE_TABLE = {
     'F': '\u250d',
 }
 
+# Character of the start position, whixh is different on the test input
 START_CHAR = '|'
 START_CHAR_TST = '7'
 
+# The orientation of the start position
 START_ORI = {
     'out_x': 1,
     'out_y': 0,
@@ -43,8 +63,10 @@ START_ORI_TST = {
 # Global variables
 
 class Gv():
-    '''Class to store global variables that are immutable, so they can be
-    reassigned within a function'''
+    '''Class to store global variables'''
+
+    # Variable that can be used to indicate we're using the test input
+    test = False
 
 
 # Classes
@@ -52,12 +74,13 @@ class Pipe():
     '''A Pipe object is an element in the grid connecting to two directions
     (or empty list, in case of .)'''
 
-    def __init__(self, char: str, x: int, y: int, test=False) -> None:
+    def __init__(self, char: str, x: int, y: int) -> None:
+        # Grid position
         self.x = x
         self.y = y
 
         if char == 'S':
-            if test:
+            if Gv.test:
                 self.char = START_CHAR_TST
             else:
                 self.char = START_CHAR
@@ -65,15 +88,22 @@ class Pipe():
             self.distance = 0
             self.status = 'L'
         else:
+            # The actual character read, wich indicates the shape
             self.char = char
+            # Indicates starting position
             self.start = False
+            # Will be filled with the distance. -1 means not set yet
             self.distance = -1
+            # The status indicats whether it is part of the loop ('L'), Inside ('I') or outside ('O')
+            # 'U' means unknown
             self.status = 'U'
 
 
     def set_relations(self, grid) -> None:
+        '''This function is to discover for each point which connecting neighbors it has'''
         self.neighbors = []
 
+        # Create tuples of coordinates
         if self.char == '.':
             return
         elif self.char == '|':
@@ -97,6 +127,7 @@ class Pipe():
         else:
             raise RuntimeError("Unknown char: {}".format(self.char))
         
+        # Fill the actual neighbor relationship
         for i in range(2):
             if nb_x[i] < 0 or nb_x[i] >= grid.x_size or \
                 nb_y[i] < 0 or nb_y[i] >= grid.y_size:
@@ -106,14 +137,17 @@ class Pipe():
 
 
     def get_next_pipe(self, prev_pipe):
+        '''Returns the next pipe in line'''
         for nb in self.neighbors:
-            # if (nb.x, nb.y) != (prev_pipe.x, prev_pipe.y):
+            # This prevents going back in the direction we came
             if nb != prev_pipe:
                 return nb
 
 
     def set_neighbor_status(self, grid) -> None:
-        '''Set neighbors status as either Inside or Outside'''
+        '''Set neighbors status as either Inside or Outside
+        This is dependant on the shape of pipe, so special private functions are
+        created for each shape'''
         if self.char == '|' or self.char == '-':
             self._set_neighbor_status_straight(grid)
         elif self.char == 'L':
@@ -219,15 +253,28 @@ class Pipe():
         self._set_nb_io(nb_x, nb_y, io, grid)
 
 
-    def _set_nb_io(self, nb_x, nb_y, io, grid) -> None:
+    def _set_nb_io(self, nb_x, nb_y, io, grid, flood=False) -> None:
+        '''Private function to set the status of a neighbor'''
+        
+        # Check if it exists at all
         if nb_x >= 0 and nb_x < grid.x_size and \
             nb_y >= 0 and nb_y < grid.y_size:
+
+            # Only change if status is unknown
             if grid.pipes[nb_x,nb_y].status == 'U':
                 grid.pipes[nb_x,nb_y].status = io
                 # print("setting status to {} for {},{}".format(io, nb_x, nb_y))
 
+                # If called from the flood function
+                if flood:
+                    grid.pipes[nb_x,nb_y].flood(grid)
+
 
     def set_ori(self, prev_pipe) -> None:
+        '''Set the orientation of the pipe, depending on the previous pipe.
+        Also here, there is a private function for each shape'''
+
+        # Set the status of the pipe as part of the loop
         self.status = 'L'
         # print('setting status to L for {},{}'.format(self.x, self.y))
 
@@ -242,7 +289,7 @@ class Pipe():
         elif self.char == '7':
             self._set_ori_sw(prev_pipe)
         elif self.char == 'F':
-            self._set_ori_sw(prev_pipe)
+            self._set_ori_se(prev_pipe)
 
 
     def _set_ori_hor(self, prev_pipe) -> None:
@@ -325,16 +372,16 @@ class Pipe():
         if right_under == 'in':
             self.ori = {
                 'in_x': 1,
-                'in_y': -1,
+                'in_y': 1,
                 'out_x': -1,
-                'out_y': 1,
+                'out_y': -1,
             }
         else:
             self.ori = {
                 'in_x': -1,
-                'in_y': 1,
+                'in_y': -1,
                 'out_x': 1,
-                'out_y': -1,
+                'out_y': 1,
             }
 
 
@@ -395,66 +442,110 @@ class Pipe():
                 'out_y': -1,
             }
 
+    def flood(self, grid) -> None:
+        '''Set all unknown neighbors to the same state and if you do, also start
+        the flood process on that neighbor'''
+        for y in range(self.y-1,self.y+2):
+            for x in range(self.x-1,self.x+2):
+                self._set_nb_io(x,y,self.status,grid,flood=True)
 
 
 class Grid():
     '''The grid containing all the pipes'''
 
-    def __init__(self, lines: list[str], test=False) -> None:
+    def __init__(self, lines: list[str]) -> None:
+        # The size of the matrix
         self.x_size = len(lines[0])
         self.y_size = len(lines)
+
+        # The Pipe objects
         self.pipes = np.full((self.x_size, self.y_size), None)
 
+        # Fill the Pipe objects
         for y in range(self.y_size):
             for x in range(self.x_size):
-                self.pipes[x,y] = Pipe(lines[y][x],x,y,test=test)
+                self.pipes[x,y] = Pipe(lines[y][x],x,y)
+
+                # If this is the start pipe
                 if self.pipes[x,y].start:
+                    # Create an attribute pointing to the start pipe
                     self.start = self.pipes[x,y]
 
 
     def set_relations(self) -> None:
+        '''Walk through the matrix and set the connecting neighbors for each Pipe'''
         for y in range(self.y_size):
             for x in range(self.x_size):
                 self.pipes[x,y].set_relations(self)
 
 
-    def get_max_distance(self, test=False, dir = 2) -> None:
+    def get_max_distance(self, dir = 2) -> None:
+        '''Start retrieving the max distance by following the pipe
+        In part 1, this needs to be done in both directions (dir=2), but for part 2,
+        this is not required as the actual distance is not important there'''
+
         for i in range(dir):
             self.discover_path(i)
 
 
-    def discover_path(self, i: int, test=False) -> None:
+    def discover_path(self, i: int) -> None:
+        '''Discover the path of the loop through the grid'''
+
+        # Keep track of the distance
         steps = 1
+
+        # We begin by setting the previous pipe for the firs step as the start pipe
         prev_pipe = self.start
 
-        if test:
+        # Set the start orientation
+        if Gv.test:
             prev_pipe.ori = START_ORI_TST
         else:
             prev_pipe.ori = START_ORI
 
+        # Set the neighbors to I or O depending on the orientation
         prev_pipe.set_neighbor_status(self)
 
+        # Set the current pipe as the next pipe from the start pipe
         cur_pipe = prev_pipe.neighbors[i]
 
+        # Set the orientation of the current pipe, looking at the start pipe
         cur_pipe.set_ori(prev_pipe)
+        # print('char:', prev_pipe.char)
+        # pprint(prev_pipe.ori)
+        # print()
 
         while True:
-            self.print_map()
+            # print('step', steps)
+            # print('char:', cur_pipe.char)
+            # pprint(cur_pipe.ori)
+            # self.print_map()
 
+            # If the distance has not been set yet, or the distance is bigger than steps, set
+            # the distance to steps
+            # The latter is to get the farthest distance from both ways (part 1)
             if cur_pipe.distance < 0 or cur_pipe.distance > steps:
                 cur_pipe.distance = steps
 
+            # Set the neighbors to I or O depending on the orientation
             cur_pipe.set_neighbor_status(self)
     
+            # Retrieve the next pipe
             next_pipe = cur_pipe.get_next_pipe(prev_pipe)
 
-            if next_pipe.start or steps > MAX_ROUNDS:
-            # if next_pipe.start:
+            # When the loop is closed, abort the process
+            # if next_pipe.start or steps > MAX_ROUNDS:
+            if next_pipe.start:
                 break
 
+            # Increase steos
             steps += 1
+
+            # Circulate the pipes
             prev_pipe = cur_pipe
             cur_pipe = next_pipe
+
+            # Set the orientation of the current (new) pipe, looking at the previous pipe
             cur_pipe.set_ori(prev_pipe)
 
 
@@ -491,13 +582,22 @@ class Grid():
             print(line)
 
 
+    def flood(self) -> None:
+        '''Fill all unknown pipes with I or O'''
+        for pipe in self.pipes.flat:
+            # if pipe.status == 'I' or pipe.status == 'O':
+            if pipe.status == 'I':
+                pipe.flood(self)
+
+
 # Main functions
 def get_solution_part1(lines: list[str], test=False) -> int:
     '''Main function'''
 
-    grid = Grid(lines,test=test)
+    Gv.test = test
+    grid = Grid(lines)
     grid.set_relations()
-    grid.get_max_distance(test=test)
+    grid.get_max_distance()
 
     # grid.print_distances()
     grid.print_map()
@@ -510,9 +610,11 @@ def get_solution_part1(lines: list[str], test=False) -> int:
 def get_solution_part2(lines: list[str], test=False) -> int:
     '''Main function'''
 
-    grid = Grid(lines,test=test)
+    Gv.test = test
+    grid = Grid(lines)
     grid.set_relations()
-    grid.get_max_distance(test=test, dir=1)
+    grid.get_max_distance(dir=1)
+    grid.flood()
 
     grid.print_map()
 
