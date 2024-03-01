@@ -163,7 +163,7 @@ class File():
 
 
 # Main functions
-def get_solution_part1(lines: list[str]) -> int:
+def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
     '''Main function'''
 
     fs = FileSystem(lines)
@@ -174,7 +174,7 @@ def get_solution_part1(lines: list[str]) -> int:
     return 'part_1 ' + __name__
 
 
-def get_solution_part2(lines: list[str]) -> int:
+def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function'''
 
     fs = FileSystem(lines)

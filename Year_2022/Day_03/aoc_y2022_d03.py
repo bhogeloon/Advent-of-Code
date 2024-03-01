@@ -92,7 +92,7 @@ def get_item_priority(char: str) -> int:
 
 
 # Main functions
-def get_solution_part1(lines: list[str]) -> int:
+def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
     '''Main function'''
 
     prio_sum = 0
@@ -107,7 +107,7 @@ def get_solution_part1(lines: list[str]) -> int:
     # return __name__
 
 
-def get_solution_part2(lines: list[str]) -> int:
+def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function'''
 
     prio_sum = 0
