@@ -550,6 +550,10 @@ class Grid():
 
 
     def print_distances(self) -> None:
+        '''Print a map showing all the distances of the loop.
+        Note that this only works very well using the test input as with the normal input you
+        will get double figures'''
+
         for y in range(self.y_size):
             line = ''
             for x in range(self.x_size):
@@ -562,15 +566,24 @@ class Grid():
 
 
     def print_map(self) -> None:
+        '''Print a map of the loop, showing also inside and outside.
+        It uses uucode symbols rather than character to visualise the loop.
+        Really useful for debugging as you can also use this step by step'''
+
         for y in range(self.y_size):
+            # Start a new line
             line = ''
+
             for x in range(self.x_size):
+
+                # Print S for startpoint
                 if self.pipes[x,y].start:
                     line += 'S'
                     continue
 
                 distance = self.pipes[x,y].distance
                 status = self.pipes[x,y].status
+
                 if status == 'I':
                     line += '*'
                 elif status == 'O':
@@ -579,12 +592,16 @@ class Grid():
                     line += UUCODE_TABLE[self.pipes[x,y].char]
                 else:
                     line += ' '
+
             print(line)
 
 
     def flood(self) -> None:
-        '''Fill all unknown pipes with I or O'''
+        '''Fill all the inside fields which are not marked yet'''
         for pipe in self.pipes.flat:
+            # We're not really interested in the outside field and this caused
+            # problems with recursion limits. Probably better to just itterate 
+            # over the matrix until all unkown fields are gone.
             # if pipe.status == 'I' or pipe.status == 'O':
             if pipe.status == 'I':
                 pipe.flood(self)
@@ -592,7 +609,7 @@ class Grid():
 
 # Main functions
 def get_solution_part1(lines: list[str], test=False) -> int:
-    '''Main function'''
+    '''Main function for the part 1 solution'''
 
     Gv.test = test
     grid = Grid(lines)
@@ -602,13 +619,14 @@ def get_solution_part1(lines: list[str], test=False) -> int:
     # grid.print_distances()
     grid.print_map()
 
+    # The result is the maximum distance
     return max([p.distance for p in grid.pipes.flat ])
 
     return 'part_1 ' + __name__
 
 
 def get_solution_part2(lines: list[str], test=False) -> int:
-    '''Main function'''
+    '''Main function for the part 2 solution'''
 
     Gv.test = test
     grid = Grid(lines)
@@ -618,6 +636,7 @@ def get_solution_part2(lines: list[str], test=False) -> int:
 
     grid.print_map()
 
+    # Count all fields with status I
     return [p.status for p in grid.pipes.flat].count('I')
 
     return 'part_2 ' + __name__
