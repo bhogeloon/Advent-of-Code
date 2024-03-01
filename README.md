@@ -1,4 +1,4 @@
-# Advent of Code puzzle solution
+# Advent of Code puzzle solutions
 
 ## Author: Bert van Hogeloon
 
