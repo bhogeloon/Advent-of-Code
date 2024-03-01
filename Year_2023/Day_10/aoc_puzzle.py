@@ -608,10 +608,10 @@ class Grid():
 
 
 # Main functions
-def get_solution_part1(lines: list[str], test=False) -> int:
+def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 1 solution'''
 
-    Gv.test = test
+    Gv.test = kwargs.get('test', False)
     grid = Grid(lines)
     grid.set_relations()
     grid.get_max_distance()
@@ -625,10 +625,10 @@ def get_solution_part1(lines: list[str], test=False) -> int:
     return 'part_1 ' + __name__
 
 
-def get_solution_part2(lines: list[str], test=False) -> int:
+def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
-    Gv.test = test
+    Gv.test = kwargs.get('test', False)
     grid = Grid(lines)
     grid.set_relations()
     grid.get_max_distance(dir=1)
