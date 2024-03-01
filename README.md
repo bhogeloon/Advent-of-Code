@@ -12,3 +12,22 @@ I like to use classes, but in this case I don't bother to create a file for each
 solution is in one file.
 
 To run the code, run the aoc.py module as follows:
+
+usage: aoc.py [-h] [--year {2019,2020,2021,2022,2023}]
+              [--day {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25}] [--part {a,b,1,2}]
+              [--input INPUT] [--test] [--old_format] [--not_so_old_format]
+
+Advent of Code wrapper
+
+options:
+  -h, --help            show this help message and exit
+  --year {2019,2020,2021,2022,2023}, -y {2019,2020,2021,2022,2023}
+                        Year
+  --day {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25}, -d {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25}
+                        Day
+  --part {a,b,1,2}, -p {a,b,1,2}
+                        Part
+  --input INPUT, -i INPUT
+                        Input file name
+  --test, -t            Use test.txt as input file
+  
