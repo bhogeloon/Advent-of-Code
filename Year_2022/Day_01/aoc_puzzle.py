@@ -3,7 +3,13 @@ Year 2022, Day 1, Part 1
 
 Problem description: See https://adventofcode.com/2022/day/1
 
-<Include solution description>
+For this problem, I created two classes:
+- Elf, representing an elf that carries food
+- Food, an item of food, containing a number of calories.
+
+For the first part, I just need to pick the elf with the most amount of total calories.
+
+For part 2, get the top 3 of total calories.
 
 """
 
@@ -59,9 +65,12 @@ def process_input(lines: list[str]) -> list:
         # If new line
         if line == '':
             if len(elf.foods) > 0:
+                # Append the elf to the list
                 all_elfs.append(elf)
+                # Start with a new elf
                 elf = Elf()
         else:
+            # Append a Food object to the Elf object
             elf.foods.append(Food(line))
 
     if len(elf.foods) > 0:
@@ -91,9 +100,12 @@ def get_fattest3_elfs(all_elfs: list[Elf]) -> int:
     max_cals = [0, 0, 0]
 
     for elf in all_elfs:
+        # Get the total calories for this Elf
         cals = elf.get_cals()
         #pprint(cals)
 
+        # If the total is more than the minumum of cals discovered,
+        # replace that value for this one.
         if cals > min(max_cals):
             max_cals[max_cals.index(min(max_cals))] = cals
 
