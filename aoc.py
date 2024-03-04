@@ -3,10 +3,13 @@
 from read_input import read_input
 from importlib import import_module
 import argparse
+from datetime import datetime
 
 
 # Constants
 
+START_YEAR = 2015
+CUR_YEAR = datetime.now().year
 YEAR = 2023
 DAY = 1
 PART = 'a'
@@ -18,7 +21,7 @@ INPUT_FN = 'input.txt'
 argp = argparse.ArgumentParser(description="Advent of Code wrapper")
 
 argp.add_argument(
-    '--year', '-y', type=int, choices=[2019, 2020, 2021, 2022, 2023],
+    '--year', '-y', type=int, choices=[y for y in range(START_YEAR, CUR_YEAR+1)],
     help="Year",
 )
 
