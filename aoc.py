@@ -109,6 +109,9 @@ aoc_module = import_module(MODULE)
 
 lines = read_input(INPUT_FILE)
 # lines = read_input(DAY_DIR + '/example1.txt')
+
+print()
+
 if args.old_format:
     print("Solution:", aoc_module.get_solution(lines))
 else:
