@@ -9,7 +9,8 @@ from datetime import datetime
 # Constants
 
 START_YEAR = 2015
-CUR_YEAR = datetime.now().year
+START_TIME = datetime.now()
+CUR_YEAR = START_TIME.year
 YEAR = 2023
 DAY = 1
 PART = 'a'
@@ -116,3 +117,13 @@ else:
     else:
         print("Solution part 2:", aoc_module.get_solution_part2(lines,test=args.test))
 
+
+# Print time consumed
+end_time = datetime.now()
+total_time = end_time - START_TIME
+print()
+print("Time to execute: {} hours, {} minutes, {} seconds".format(
+    int(total_time.total_seconds() // 3600),
+    int(total_time.total_seconds()//60 % 60),
+    total_time.total_seconds() % 60,
+))
