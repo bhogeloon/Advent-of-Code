@@ -3,12 +3,33 @@ Year 2023, Day 7
 
 Problem description: See https://adventofcode.com/2023/day/7
 
+For this puzzle I created the following classes:
+- Hand: A set of cards. Attributes:
+    - cards: A string containing the original card symbols
+    - bid: The bid value
+    - rank: The rank that the Hand will get
+    - trans_cards: A translation of the cards in letters, indicating
+        the value (z is highest value of Ace)
+    - type: The value type of the Hand (from pair to 5 of a kind). The
+        higher the type, the higher the value.
+    - sort_string: A combined string of type and trans_cards
+- Hands: container class (list) of Hand objects
+
+For part 1, the function set_type determines the type of hand. Then it is
+just a matter of sorting the Hands list and ranking them in that order.
+
+For part 2, the idea is the same, but the set_type_jkr is slightly more
+complex as it has to take into account that the joker can be any card.
+Also, the translation value of the J is set to the lowest (1)
+
 """
 
 # Imports
 from pprint import pprint
 
 # Constants
+
+# Translation table for part 1
 CARD_TRANS = {
     'A': 'z',
     'K': 'y',
@@ -17,6 +38,7 @@ CARD_TRANS = {
     'T': 'v',
 }
 
+# Translation table for part 2
 CARD_TRANS_JKR = {
     'A': 'z',
     'K': 'y',
@@ -41,12 +63,16 @@ class Hand():
     def __init__(self, line: str) -> None:
         self.cards, bid_str = line.split()
         self.bid = int(bid_str)
+        # Will contain the rank later
         self.rank = 0
 
 
     def translate(self) -> None:
+        '''Translate the cards in something that can be sorted'''
+        # First create a copy
         self.trans_cards = self.cards
 
+        # Then for each item in the translation table, replace it
         for orig_c, new_c in CARD_TRANS.items():
             self.trans_cards = self.trans_cards.replace(orig_c, new_c)
 
@@ -60,6 +86,8 @@ class Hand():
 
     def set_type(self) -> None:
         '''Determine type of hand'''
+        # Create a set, getting rid of duplicates.
+        # This is to determine how many different cards are in the Hand
         card_set = set(self.cards)
 
         if len(card_set) == 1:
@@ -93,17 +121,20 @@ class Hand():
             # 'High card'
             self.type = '1'
 
+        # Create a sortable string. Type is most significant
         self.sort_string = self.type + self.trans_cards
 
 
     def set_type_jkr(self) -> None:
+        '''Set the hand type taking into account that the 
+        Joker can be any card'''
         # First determine the number of Jokers:
         nr_of_jkrs = self.cards.count('J')
         card_set = set(self.cards)
 
         # If no Jokers, just process as normal
         if nr_of_jkrs == 0:
-            return self.set_type()
+            self.set_type()
         
         # If 5 or 4 Jokers, make it 'Five of a kind'
         elif nr_of_jkrs >= 4:
@@ -183,6 +214,7 @@ class Hands(list):
 
 
     def rank(self) -> None:
+        '''Fill in the rank, based in the order'''
         for i, hand in enumerate(self):
             hand.rank = i + 1
 
@@ -198,6 +230,7 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
     # pprint([h.cards for h in hands])
     hands.rank()
 
+    # The result is the sum of rank times the bid
     return sum([h.rank * h.bid for h in hands])
 
     return 'part_1 ' + __name__
@@ -213,6 +246,7 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     # pprint([h.cards for h in hands])
     hands.rank()
 
+    # The result is the sum of rank times the bid
     return sum([h.rank * h.bid for h in hands])
 
     return 'part_2 ' + __name__
