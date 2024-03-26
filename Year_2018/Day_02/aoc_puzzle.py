@@ -9,8 +9,10 @@ I created the following classes:
 
 For part 1: For each box, for each item_type, check the amount of occurences, 2 times and 3 times.
 
-
-
+For part 2, I built a compare Box method, comparing each character one by one. The Boxes method
+find_match, looks for a match using the compare function for all boxes that are further in the
+list. It then removes the character from the position that differs and returns the remaining
+string.
 """
 
 # Imports
@@ -47,6 +49,28 @@ class Box():
         
         # If no match found
         return False
+    
+
+    def compare(self, otherbox) -> int:
+        '''This function compares the box with another Box object.
+        If there is exactly one position different, it will return
+        the position number that differs. If not, it will return -1'''
+        diff_nr = 0
+        pos = -1
+
+        # Examine the string
+        for i, char in enumerate(self.items):
+            # If chars are different
+            if char != otherbox.items[i]:
+                diff_nr += 1
+                pos = i
+
+        # If exactly one difference
+        if diff_nr == 1:
+            return pos
+        else:
+           return -1
+
 
 class Boxes(list[Box]):
     '''Container class of Box obects'''
@@ -68,6 +92,32 @@ class Boxes(list[Box]):
                 triple_count += 1
 
         return double_count * triple_count
+    
+
+    def find_match(self) -> str:
+        '''This function will try and find a match between two
+        boxes where only one letter is different. It will return
+        the remaining letters.'''
+
+        # For all boxes
+        for i, box in enumerate(self):
+
+            # For all remaining boxes
+            for j in range(i, len(self)):
+                pos = box.compare(self[j])
+
+                if pos == -1:
+                    continue
+
+                result = box.items
+                result_list = list(result)
+
+                # Remove the character from pos
+                del result_list[pos]
+
+                return ('').join(result_list)
+
+        return 'no match found'
 
 
 # Functions
@@ -90,6 +140,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    boxes = Boxes(lines)
+
+    return boxes.find_match()
 
     return 'part_2 ' + __name__
 
