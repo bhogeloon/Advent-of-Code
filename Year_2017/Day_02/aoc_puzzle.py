@@ -9,6 +9,10 @@ The following classes are used:
 
 Part 1: Substract max and min for each row and summarise the results.
 
+Part 2: For each row: loop through all the numbers and then again through all the
+numbers. As soon as one divides to the other in an integer then return that value.
+In the end return the sum of all those values.
+
 """
 
 # Imports
@@ -37,6 +41,26 @@ class Row(list):
     def get_diff_min_max(self) -> int:
         '''Return the max minus min value'''
         return max(self) - min(self)
+    
+
+    def get_even_division_result(self) -> int:
+        '''Find the value of two numbers that can be devided to each other
+        evenly.'''
+
+        # Go through all the numbers
+        for i, nr1 in enumerate(self):
+            # Then go through the list again
+            for j, nr2 in enumerate(self):
+                # Skip if the same number
+                if i == j:
+                    continue
+
+                # Check if nr1 is dividable by nr2
+                intdiv = nr1//nr2
+                if intdiv == nr1/nr2:
+                    return intdiv
+
+        raise RuntimeError('No dividable nrs found for row {}'.format(str(self)))
 
 
 class Spreadsheet(list[Row]):
@@ -56,7 +80,19 @@ class Spreadsheet(list[Row]):
 
         # Return sum
         return sum(diffs)
-    
+
+
+    def get_sum_of_divisions(self) -> int:
+        '''Result of part 2'''
+        divs = []
+
+        # Get the division result for each row
+        for row in self:
+            divs.append(row.get_even_division_result())
+
+        # Return the sum
+        return sum(divs)
+
 
 # Functions
 
@@ -78,6 +114,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    spreadsheet = Spreadsheet(lines)
+
+    return spreadsheet.get_sum_of_divisions()
 
     return 'part_2 ' + __name__
 
