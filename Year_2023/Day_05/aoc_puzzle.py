@@ -3,6 +3,26 @@ Year 2023, Day 5
 
 Problem description: See https://adventofcode.com/2023/day/5
 
+The following classes are used:
+- Item: This is a range of items, which can be of any sort. It contains
+    a base address and a length.
+- MapEntry: An line which maps a certain item to an item of another sort.
+- Map: The list of MapEntries.
+
+Part 1: At the start, for each conversion step a Map object is created as a
+class variable. Then, the function get_location will call the function to get_humidity and
+so forth. In the end, this results in a list of locations, of which then the smallest value
+is chosen.
+As the items are just single numbers, the Item length will be always 1.
+
+Part 2: Now, the Item length is a variable, but other than that, the functions remain
+the same (although of course, the length attribute was only introduce during part 2)
+
+I'm not really satisfied with this solution as it involves much of the same code in different
+functions. It would be better to have generic functions that work for each Map object and
+then call this function recurringly.
+But it gets the job done, so on the next puzzle.
+
 """
 
 # Imports
