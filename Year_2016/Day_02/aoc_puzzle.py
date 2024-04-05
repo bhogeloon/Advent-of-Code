@@ -15,15 +15,32 @@ For part 1: follow all the instructions and change the InstructionSets.keypad va
 accordingly. At the end of each IntructionSet object: retrieve the current keypad
 position.
 
+For part 2 I made the keypad more generic (varying in size) and I also checked that if the
+next key was value 'x' (an non-existing key) the current key value will not change.
+At the start, I make a class variable for part 1 and part 2 to make all the functions
+work for both parts, without having to create new ones.
 """
 
 # Imports
 from pprint import pprint
 import numpy as np
+from collections import deque
+from math import sqrt
 
 
 # Constants
+# The keypad lay out for both parts
+KP ={}
 
+KP[1] = '123'
+KP[1] += '456'
+KP[1] += '789'
+
+KP[2] = 'xx1xx'
+KP[2] += 'x234x'
+KP[2] += '56789'
+KP[2] += 'xABCx'
+KP[2] += 'xxDxx'
 
 # Global variables
 
@@ -39,58 +56,82 @@ class Gv():
 class Keypad():
     '''This is the keypad containing the numbers 1 to 9 in a matrix form.
     It has addtional attributes cur_x and cur_y to indicate the current position'''
-    def __init__(self) -> None:
-        self.keys = np.full((3,3), None)
+    def __init__(self, part=1) -> None:
+        '''Create the initial keypad, based on the solution part'''
+        digits = deque(KP[part])
+
+        self.size = int(sqrt(len(digits)))
+
+        self.keys = np.full((self.size,self.size), None)
         # Fill the keypad with numbers 1 to 9
         fill_nr = 1
-        for y in range(3):
-            for x in range(3):
-                self.keys[x,y] = fill_nr
-                fill_nr += 1
 
-        # Set current key to 5 (middle one)
-        self.cur_x = 1
-        self.cur_y = 1
+        for y in range(self.size):
+            for x in range(self.size):
+                digit = digits.popleft()
+                self.keys[x,y] = digit
+                
+                # if digit has value 5, set as current
+                if digit == '5':
+                    self.cur_x = x
+                    self.cur_y = y
 
 
     def get_current(self) -> str:
         '''Return the current key in str format'''
-        return str(self.keys[self.cur_x, self.cur_y])
+        return self.keys[self.cur_x, self.cur_y]
 
 
 class Instruction():
     '''Contains a single instruction (UDLR)'''
 
-    def __init__(self, char: str) -> None:
+    def __init__(self, char: str, part = 1) -> None:
+        self.part = part
         self.dir = char
 
 
     def process(self) -> None:
         '''Change the current keypad according to direction'''
 
-        keypad = InstructionSets.keypad
+        keypad = InstructionSets.keypad[self.part]
 
+        # Determine new (candidate) x,y value
         # If up change y if not already 0
         if self.dir == 'U' and keypad.cur_y > 0:
-            keypad.cur_y -= 1
+            new_x = keypad.cur_x
+            new_y = keypad.cur_y - 1
         # If down change y if not already 2
-        elif self.dir == 'D' and keypad.cur_y < 2:
-            keypad.cur_y += 1
+        elif self.dir == 'D' and keypad.cur_y < keypad.size - 1:
+            new_x = keypad.cur_x
+            new_y = keypad.cur_y + 1
         # If left change x if not already 0
         elif self.dir == 'L' and keypad.cur_x > 0:
-            keypad.cur_x -= 1
+            new_x = keypad.cur_x - 1
+            new_y = keypad.cur_y
         # If right change x if not already 2
-        elif self.dir == 'R' and keypad.cur_x < 2:
-            keypad.cur_x += 1
+        elif self.dir == 'R' and keypad.cur_x < keypad.size - 1:
+            new_x = keypad.cur_x + 1
+            new_y = keypad.cur_y
+        # If no match, just continue and don't chane anything
+        else:
+            return
+
+        # If the new keypad value equals 'x', don't change anything
+        # Otherwise change the keypad values
+        if keypad.keys[new_x, new_y] != 'x':
+            keypad.cur_x = new_x
+            keypad.cur_y = new_y
 
 
 class InstructionSet(list[Instruction]):
     '''Contains a list of Instruction objects which will result in 
     a single digit.'''
 
-    def __init__(self, line: str) -> None:
+    def __init__(self, line: str, part=1) -> None:
+        self.part = part
+
         for char in line:
-            self.append(Instruction(char))
+            self.append(Instruction(char, self.part))
 
 
     def get_digit(self) -> str:
@@ -98,22 +139,29 @@ class InstructionSet(list[Instruction]):
         for instr in self:
             instr.process()
 
-        return InstructionSets.keypad.get_current()
+        # Return the current keypad value
+        return InstructionSets.keypad[self.part].get_current()
 
 
 class InstructionSets(list[InstructionSet]):
     '''List container class of InstructionSet objects. This will result in
     the bathroom code'''
 
-    keypad = Keypad()
+    # Class variable that contains the keypads for both parts
+    keypad = {
+        1: Keypad(1),
+        2: Keypad(2),
+    }
 
-    def __init__(self, lines: list[str]) -> None:
+    def __init__(self, lines: list[str], part = 1) -> None:
+        self.part = part
+
         for line in lines:
-            self.append(InstructionSet(line))
+            self.append(InstructionSet(line, self.part))
 
 
     def get_bathroom_code(self) -> str:
-        '''Get the solution to part 1'''
+        '''Get the solution'''
         result = ''
 
         for instrs in self:
@@ -142,6 +190,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    instrs = InstructionSets(lines, part=2)
+
+    return instrs.get_bathroom_code()
 
     return 'part_2 ' + __name__
 
