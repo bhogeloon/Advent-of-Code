@@ -15,7 +15,7 @@ The following classes are used:
 Part 1: For each card, check for each number if it is in the winning list and then double
 the score (or set to 1 if is still 0)
 
-For part 2, the copies attdibute was introduced. For each card, we first calculate the number
+For part 2, the copies attribute was introduced. For each card, we first calculate the number
 of wins and then increase the copies attribute for all cards below that. We increase it by the
 amount of copies that was already calculate for the card in hand.
 
