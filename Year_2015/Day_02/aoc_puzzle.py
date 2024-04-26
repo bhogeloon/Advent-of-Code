@@ -10,10 +10,14 @@ are calculated.
 
 For part 1, the three area's are summarized and multiplied by 2. Then we add the minimum area.
 
+For part 2, sort the side sizes and remove the largest value. Then add them up and multiply by 2.
+Finally, add the product of all sides.
+
 """
 
 # Imports
 from pprint import pprint
+from math import prod
 
 
 # Constants
@@ -44,6 +48,14 @@ class Present():
 
     def get_paper(self) -> int:
         return 2 * sum(self.areas) + min(self.areas)
+    
+
+    def get_ribbon(self) -> int:
+        sides = sorted(self.sizes.values())
+        # Remove largest side
+        sides.pop()
+
+        return 2 * sum(sides) + prod(self.sizes.values())
 
 
 class Presents(list[Present]):
@@ -58,6 +70,14 @@ class Presents(list[Present]):
         result = 0
         for present in self:
             result += present.get_paper()
+
+        return result
+    
+
+    def get_total_ribbon(self) -> int:
+        result = 0
+        for present in self:
+            result += present.get_ribbon()
 
         return result
     
@@ -82,6 +102,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    presents = Presents(lines)
+
+    return presents.get_total_ribbon()
 
     return 'part_2 ' + __name__
 
