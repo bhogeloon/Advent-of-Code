@@ -3,7 +3,12 @@ Year 2015, Day 2
 
 Problem description: See https://adventofcode.com/2015/day/2
 
-<Include solution description>
+The following classes are used:
+- Present: represents a present with sizes (lwh). At creation time also the three different area's
+are calculated.
+- Presents: List container class of Present objects.
+
+For part 1, the three area's are summarized and multiplied by 2. Then we add the minimum area.
 
 """
 
@@ -30,18 +35,15 @@ class Present():
     
     def __init__(self, line: str) -> None:
         self.sizes = {}
-
         self.sizes['l'], self.sizes['w'],self.sizes['h']=[int(s) for s in line.split('x')]
+        self.areas = []
+        self.areas.append(self.sizes['l'] * self.sizes['w'])
+        self.areas.append(self.sizes['w'] * self.sizes['h'])
+        self.areas.append(self.sizes['h'] * self.sizes['l'])
 
 
     def get_paper(self) -> int:
-        result = 2 * self.sizes['l'] * self.sizes['w']
-        result += 2 * self.sizes['w'] * self.sizes['h']
-        result += 2 * self.sizes['h'] * self.sizes['l']
-        # This is wrong
-        result += min(self.sizes.values())
-
-        return result
+        return 2 * sum(self.areas) + min(self.areas)
 
 
 class Presents(list[Present]):
