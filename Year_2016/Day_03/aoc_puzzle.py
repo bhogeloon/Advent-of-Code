@@ -13,6 +13,7 @@ Part 1: Check for each side if it is smaller than half of the sum of sides.
 
 # Imports
 from pprint import pprint
+import numpy as np
 
 
 # Constants
@@ -32,8 +33,8 @@ class Gv():
 class Triangle():
     '''Triangle with three sides'''
 
-    def __init__(self, line: str) -> None:
-        self.sides = [int(s) for s in line.split()]
+    def __init__(self, a: int, b: int, c: int) -> None:
+        self.sides = [a, b, c]
         self.side_sum = sum(self.sides)
 
 
@@ -52,9 +53,31 @@ class Triangle():
 class Triangles(list[Triangle]):
     '''List container class of Triangle objects'''
 
-    def __init__(self, lines: list[str]) -> None:
+    def __init__(self, lines: list[str], method='hor') -> None:
+        if method == 'hor':
+            self._init_hor(lines)
+        elif method == 'ver':
+            self._init_ver(lines)
+        else:
+            raise RuntimeError("Unkown method: {}".format(method))
+
+
+    def _init_hor(self, lines:list[str]) -> None:
+        '''Create Triangle object read horizontally (part 1)'''
         for line in lines:
-            self.append(Triangle(line))
+            a,b,c = exctract_ints(line)
+            self.append(Triangle(a,b,c))
+
+
+    def _init_ver(self, lines: list[str]):
+        '''Create Triangle object read vertically (part 2)'''
+        for i in range(0,len(lines),3):
+            size_block = []
+            for j in range(3):
+                size_block.append(exctract_ints(lines[i+j]))
+
+            for x in range(3):
+                print(size_block[x][0])
 
 
     def get_valid(self) -> int:
@@ -69,6 +92,10 @@ class Triangles(list[Triangle]):
 
 
 # Functions
+
+def exctract_ints(line: str) -> list[int]:
+    '''Function that reads a line and returns the integers (seperated by blanks)'''
+    return [int(s) for s in line.split()]
 
 
 # Main functions
@@ -88,6 +115,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    triangles = Triangles(lines, method='ver')
+
+    return triangles.get_valid()
 
     return 'part_2 ' + __name__
 
