@@ -9,11 +9,14 @@ The following classes are used:
 
 Part 1: Check for each side if it is smaller than half of the sum of sides.
 
+For part 2 I just had to change the way to read the input. All lines are read in blocks
+of 3 and then the vertical values are passed on the Triangle initiator.
+The calculation remains the same.
+
 """
 
 # Imports
 from pprint import pprint
-import numpy as np
 
 
 # Constants
@@ -65,8 +68,7 @@ class Triangles(list[Triangle]):
     def _init_hor(self, lines:list[str]) -> None:
         '''Create Triangle object read horizontally (part 1)'''
         for line in lines:
-            a,b,c = exctract_ints(line)
-            self.append(Triangle(a,b,c))
+            self.append(Triangle(*exctract_ints(line)))
 
 
     def _init_ver(self, lines: list[str]):
@@ -76,8 +78,13 @@ class Triangles(list[Triangle]):
             for j in range(3):
                 size_block.append(exctract_ints(lines[i+j]))
 
+            # Create Triangle objects using the vertical values
             for x in range(3):
-                print(size_block[x][0])
+                self.append(Triangle(
+                    size_block[0][x],
+                    size_block[1][x],
+                    size_block[2][x],
+                ))
 
 
     def get_valid(self) -> int:
