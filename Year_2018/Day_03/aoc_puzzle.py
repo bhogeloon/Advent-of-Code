@@ -9,7 +9,12 @@ The following classes are used:
     that contains all ElveIds that claim this position.
 
 Part 1: For each input line, the grid positions are determined and for each grid position, the
-Elve ID is added. As soon as the number of ids reaches 2, the double_booked counter is increased.
+claim ID is added. As soon as the number of ids reaches 2, the double_booked counter is increased.
+
+Part 2: An additional function is used to find the single isolated claim. We introduce an
+attribute, which collects all candidate claim ids (in a set). It goes through all the grid position
+and if a single id has been found (which wasn't seen before), it is added as candidate. If
+multiple ids are found they are removed from the set. In the end only one should be left.
 
 """
 
@@ -50,6 +55,7 @@ class Fabric():
         # Counter that keeps track of all positions that are occupied by
         # multiple ElveIds
         self.double_booked = 0
+        self.isolated_claims = set()
 
 
     def gather_claims(self, lines: list[str]) -> None:
@@ -73,6 +79,22 @@ class Fabric():
                 # If double booked, increment counter
                 if self.grid[x,y].add_id(id) == 2:
                     self.double_booked += 1
+
+
+    def find_isolated_claim(self) -> None:
+        '''Find the isloated claim and store in the isolated_claims set attribute'''
+        # Set to track which ids have already been considered
+        ids_considered = set()
+
+        for elve_ids in self.grid.flat:
+            # If one id found, add it to the cancidate set
+            if len(elve_ids) == 1 and elve_ids[0] not in ids_considered:
+                self.isolated_claims |= set(elve_ids)
+                ids_considered |= set(elve_ids)
+            # If multiple ids found, remove them from the candidate set
+            elif len(elve_ids) > 1:
+                self.isolated_claims -= set(elve_ids)
+                ids_considered |= set(elve_ids)
 
 
 class ElveIds(list[int]):
@@ -108,6 +130,15 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    fabric = Fabric()
+    fabric.gather_claims(lines)
+    fabric.find_isolated_claim()
+
+    if len(fabric.isolated_claims) > 1:
+        raise RuntimeError("More than 1 entry found in the set")
+
+    return fabric.isolated_claims.pop()
 
     return 'part_2 ' + __name__
 
