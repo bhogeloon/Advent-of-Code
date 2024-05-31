@@ -3,13 +3,20 @@ Year 2018, Day 3
 
 Problem description: See https://adventofcode.com/2018/day/3
 
-<Include solution description>
+The following classes are used:
+- Fabric: This contains the Numpy grid with fabric positions
+- ElveIds: Each Fabric grid position holds an ElveIds object. This is a list
+    that contains all ElveIds that claim this position.
+
+Part 1: For each input line, the grid positions are determined and for each grid position, the
+Elve ID is added. As soon as the number of ids reaches 2, the double_booked counter is increased.
 
 """
 
 # Imports
 from pprint import pprint
 import numpy as np
+import re
 
 
 # Constants
@@ -38,7 +45,46 @@ class Fabric():
 
         for y in range(GRID_SIZE):
             for x in range(GRID_SIZE):
-                self.grid[x,y] = 0
+                self.grid[x,y] = ElveIds()
+
+        # Counter that keeps track of all positions that are occupied by
+        # multiple ElveIds
+        self.double_booked = 0
+
+
+    def gather_claims(self, lines: list[str]) -> None:
+        '''Process all Elve claims'''
+        for line in lines:
+            self.process_claim(line)
+
+
+    def process_claim(self, line: str) -> None:
+        '''Process Elve claim'''
+        m = re.fullmatch(r'#(\d+)\s+@\s+(\d+),(\d+):\s+(\d+)x(\d+)', line)
+
+        id = int(m.group(1))
+        x_start = int(m.group(2))
+        y_start = int(m.group(3))
+        x_len = int(m.group(4))
+        y_len = int(m.group(5))
+
+        for y in range(y_start, y_start+y_len):
+            for x in range(x_start, x_start+x_len):
+                # If double booked, increment counter
+                if self.grid[x,y].add_id(id) == 2:
+                    self.double_booked += 1
+
+
+class ElveIds(list[int]):
+    '''Elve Ids that occupy the Fabric grid position'''
+
+    def __init__(self) -> None:
+        pass
+
+
+    def add_id(self, id: int) -> int:
+        self.append(id)
+        return len(self)
 
 
 # Functions
@@ -51,6 +97,9 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
     Gv.test = kwargs.get('test', False)
 
     fabric = Fabric()
+    fabric.gather_claims(lines)
+
+    return fabric.double_booked
 
     return 'part_1 ' + __name__
 
