@@ -4,7 +4,10 @@ from read_input import read_input
 from importlib import import_module
 import argparse
 from datetime import datetime
+import sys
 
+# Change path
+sys.path.append('../aoc_lib')
 
 # Constants
 
