@@ -20,8 +20,8 @@ multiple ids are found they are removed from the set. In the end only one should
 
 # Imports
 from pprint import pprint
-import numpy as np
 import re
+from grid import Grid2D
 
 
 # Constants
@@ -41,16 +41,15 @@ class Gv():
 
 # Classes
 
-class Fabric():
+class Fabric(Grid2D):
     '''Class for the fabric for Santa's outfit.
     Contains a numpy grid object'''
 
     def __init__(self) -> None:
-        self.grid = np.full((GRID_SIZE,GRID_SIZE), None)
-
-        for y in range(GRID_SIZE):
-            for x in range(GRID_SIZE):
-                self.grid[x,y] = ElveIds()
+        super().__init__(
+            sizes=(GRID_SIZE,GRID_SIZE),
+            cell_class=ElveIds
+        )
 
         # Counter that keeps track of all positions that are occupied by
         # multiple ElveIds
