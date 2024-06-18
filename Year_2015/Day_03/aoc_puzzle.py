@@ -18,7 +18,7 @@ one.
 
 # Imports
 from pprint import pprint
-import numpy as np
+from grid import Grid2D
 
 
 # Constants
@@ -64,15 +64,15 @@ class House():
         self.present_rcvd = True
 
 
-class Houses():
+class Houses(Grid2D):
     '''Class containing a grid (numpy) of House objects'''
 
     def __init__(self, line: str) -> None:
-        self.houses = np.full((GRID_SIZE,GRID_SIZE), None)
-
-        for y in range(GRID_SIZE):
-            for x in range(GRID_SIZE):
-                self.houses[x,y] = House()
+        super().__init__(
+            sizes=(GRID_SIZE,GRID_SIZE),
+            cell_class=House
+        )
+        self.houses = self.grid
 
         self.santa_x = GRID_START
         self.santa_y = GRID_START
