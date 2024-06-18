@@ -17,10 +17,13 @@ class Grid():
         This class has the following argument:
             - sizes: a list or tuple that contains the sizes per dimension. The length of this
                 list/tuple also defines the dimensions that are created for the grid
+            - default_value: The default value with which the cells are initially filled (or
+                None if not specified.)
         '''
         self.sizes = kwargs['sizes']
+        default_value = kwargs.get('default_value', None)
 
-        self.grid = np.full(self.sizes, None)
+        self.grid = np.full(self.sizes, default_value)
 
 
 class Grid1D(Grid):
@@ -30,6 +33,8 @@ class Grid1D(Grid):
         '''
         Class for a one-dimensional grid. It requires the following attributes:
             - sizes: int or list or tuple containing only one value.
+            - default_value: The default value with which the cells are initially filled (or
+                None if not specified.)
             - cell_class: The class in which each cell is created in. The class must
                 support a default initialisation (without any arguments).
                 If this argument is not specified, all cells remain with content None.
@@ -99,8 +104,8 @@ class Grid3D(Grid):
 
 
 if __name__ == '__main__':
-    grid = Grid3D(sizes=[3,2,2], cell_class = TestLib)
-    # grid = Grid1D(sizes=3)
+    # grid = Grid3D(sizes=[3,2,2], cell_class = TestLib)
+    grid = Grid1D(sizes=3, default_value = 69)
 
     print(grid.__class__)
 

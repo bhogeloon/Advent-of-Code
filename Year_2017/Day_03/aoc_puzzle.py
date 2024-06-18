@@ -21,7 +21,7 @@ As soon as we hit a value higher than the input, we record this number and stop.
 
 # Imports
 from pprint import pprint
-import numpy as np
+from grid import Grid2D
 
 
 # Constants
@@ -41,11 +41,14 @@ class Gv():
 
 # Classes
 
-class MemoryGrid():
+class MemoryGrid(Grid2D):
     '''Grid containing memory items'''
 
     def __init__(self, limit: int, part = 1) -> None:
-        self.grid = np.full((GRID_SIZE,GRID_SIZE), 0)
+        super().__init__(
+            sizes=(GRID_SIZE,GRID_SIZE),
+            default_value=0,
+        )
 
         self.limit = limit
         # Starting point
