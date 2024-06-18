@@ -19,8 +19,9 @@ At the end, I fill the inside pipes which are not directly connected to the loop
 
 # Imports
 from pprint import pprint
-import numpy as np
 import sys
+from grid import Grid2D
+
 
 # Raise recurion limit for the flood function
 sys.setrecursionlimit(3000)
@@ -450,7 +451,7 @@ class Pipe():
                 self._set_nb_io(x,y,self.status,grid,flood=True)
 
 
-class Grid():
+class Grid(Grid2D):
     '''The grid containing all the pipes'''
 
     def __init__(self, lines: list[str]) -> None:
@@ -459,7 +460,10 @@ class Grid():
         self.y_size = len(lines)
 
         # The Pipe objects
-        self.pipes = np.full((self.x_size, self.y_size), None)
+        super().__init__(
+            sizes=(self.x_size,self.y_size),
+        )
+        self.pipes = self.grid
 
         # Fill the Pipe objects
         for y in range(self.y_size):
