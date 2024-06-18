@@ -23,9 +23,9 @@ work for both parts, without having to create new ones.
 
 # Imports
 from pprint import pprint
-import numpy as np
 from collections import deque
 from math import sqrt
+from grid import Grid2D
 
 
 # Constants
@@ -53,7 +53,7 @@ class Gv():
 
 # Classes
 
-class Keypad():
+class Keypad(Grid2D):
     '''This is the keypad containing the numbers 1 to 9 in a matrix form.
     It has addtional attributes cur_x and cur_y to indicate the current position'''
     def __init__(self, part=1) -> None:
@@ -62,7 +62,11 @@ class Keypad():
 
         self.size = int(sqrt(len(digits)))
 
-        self.keys = np.full((self.size,self.size), None)
+        super().__init__(
+            sizes=(self.size,self.size),
+        )
+
+        self.keys = self.grid
         # Fill the keypad with numbers 1 to 9
         fill_nr = 1
 
