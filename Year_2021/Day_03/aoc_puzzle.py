@@ -17,8 +17,8 @@ match the criteria. Keep doing this until only one is left.
 
 # Imports
 from pprint import pprint
-import numpy as np
 from collections import Counter
+from grid import Grid2D
 
 
 # Constants
@@ -35,13 +35,18 @@ class Gv():
 
 # Classes
 
-class DiagReport():
+class DiagReport(Grid2D):
     '''Diagnostic report, which contains all binary numbers in a numpy grid'''
 
     def __init__(self, lines: list[str]) -> None:
         self.x_size = len(lines[0])
         self.y_size = len(lines)
-        self.bins = np.full((self.x_size,self.y_size), None)
+
+        super().__init__(
+            sizes=(self.x_size,self.y_size),
+        )
+
+        self.bins = self.grid
 
         for y, line in enumerate(lines):
             for x, char in enumerate(line):
