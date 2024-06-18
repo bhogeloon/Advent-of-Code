@@ -26,8 +26,9 @@ we multiply the part numbers and list the result. At the end, the summary is ret
 
 # Imports
 from pprint import pprint
-import numpy as np
 import string
+from grid import Grid2D
+
 
 # Constants
 
@@ -40,12 +41,15 @@ class Gv():
 
 
 # Classes
-class Engine():
+class Engine(Grid2D):
     '''Matrix containing all the engine information'''
     def __init__(self, lines: list[str]) -> None:
         self.x_size = len(lines[0])
         self.y_size = len(lines)
-        self.chars = np.full((self.x_size, self.y_size), None)
+        super().__init__(
+            sizes=(self.x_size,self.y_size),
+        )
+        self.chars = self.grid
 
         for y in range(self.y_size):
             for x in range(self.x_size):
