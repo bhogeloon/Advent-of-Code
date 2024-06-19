@@ -27,6 +27,7 @@ we multiply the part numbers and list the result. At the end, the summary is ret
 # Imports
 from pprint import pprint
 import string
+# Use function in aoc_lib
 from grid import Grid2D
 
 

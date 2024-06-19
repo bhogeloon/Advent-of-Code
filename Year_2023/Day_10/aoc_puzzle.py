@@ -20,6 +20,7 @@ At the end, I fill the inside pipes which are not directly connected to the loop
 # Imports
 from pprint import pprint
 import sys
+# Use function in aoc_lib
 from grid import Grid2D
 
 

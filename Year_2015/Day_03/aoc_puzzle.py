@@ -18,6 +18,7 @@ one.
 
 # Imports
 from pprint import pprint
+# Use function in aoc_lib
 from grid import Grid2D
 
 

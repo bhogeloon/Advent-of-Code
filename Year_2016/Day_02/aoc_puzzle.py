@@ -25,6 +25,7 @@ work for both parts, without having to create new ones.
 from pprint import pprint
 from collections import deque
 from math import sqrt
+# Use function in aoc_lib
 from grid import Grid2D
 
 

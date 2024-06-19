@@ -18,6 +18,7 @@ match the criteria. Keep doing this until only one is left.
 # Imports
 from pprint import pprint
 from collections import Counter
+# Use function in aoc_lib
 from grid import Grid2D
 
 
