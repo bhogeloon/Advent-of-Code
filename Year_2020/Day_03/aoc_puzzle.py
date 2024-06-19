@@ -9,7 +9,8 @@ We use the following classes:
 
 Part 1: We walk across the grid using the Toboggan pattern and count the trees until we are 
 at the bottom. If we encounter the far right we go back to the start from the left.
- 
+
+Part 2: Do the same thing using varying patterns and multiply all results.
 """
 
 # Imports
@@ -19,8 +20,18 @@ from grid import Grid2D
 
 
 # Constants
+# For part 1
 X_INC = 3
 Y_INC = 1
+
+# For part 2
+XY_INC = [
+    (1,1),
+    (3,1),
+    (5,1),
+    (7,1),
+    (1,2),
+]
 
 
 # Global variables
@@ -58,7 +69,7 @@ class Grid(Grid2D):
                 self.grid[x,y] = GridSpot(lines[y][x])
 
 
-    def count_encountered_trees(self) -> int:
+    def count_encountered_trees(self, x_inc=X_INC, y_inc=Y_INC) -> int:
         '''Count the encountered trees following the Tobbogan pattern'''
         nr_of_trees = 0
         x_pos = 0
@@ -70,14 +81,14 @@ class Grid(Grid2D):
                 nr_of_trees += 1
 
             # Increase y coordinate
-            y_pos += Y_INC
+            y_pos += y_inc
 
             # If at the bottom, stop
             if y_pos >= self.y_size:
                 break
 
             # Increas x coordinate
-            x_pos += X_INC
+            x_pos += x_inc
 
             # If at the far right, start from the left again
             if x_pos >= self.x_size:
@@ -85,6 +96,17 @@ class Grid(Grid2D):
 
         return nr_of_trees
 
+
+    def multiply_all_slopes(self) -> int:
+        '''Run the slope with varying patterns and multiply all results'''
+
+        result = 1
+
+        for (x_inc, y_inc) in XY_INC:
+            result *= self.count_encountered_trees(x_inc,y_inc)
+
+        return result
+    
 
 # Functions
 
@@ -106,6 +128,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    grid = Grid(lines)
+
+    return grid.multiply_all_slopes()
 
     return 'part_2 ' + __name__
 
