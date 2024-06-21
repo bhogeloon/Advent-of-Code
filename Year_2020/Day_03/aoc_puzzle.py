@@ -62,11 +62,8 @@ class Grid(Grid2D):
         self.x_size = len(lines[0])
         super().__init__(
             sizes=(self.x_size,self.y_size),
+            func=lambda x=None,y=None,lines=lines: GridSpot(lines[y][x]),
         )
-
-        for y in range(self.y_size):
-            for x in range(self.x_size):
-                self.grid[x,y] = GridSpot(lines[y][x])
 
 
     def count_encountered_trees(self, x_inc=X_INC, y_inc=Y_INC) -> int:
