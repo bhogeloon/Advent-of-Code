@@ -45,13 +45,10 @@ class DiagReport(Grid2D):
 
         super().__init__(
             sizes=(self.x_size,self.y_size),
+            func=lambda x=None,y=None,lines=lines: lines[y][x],
         )
 
         self.bins = self.grid
-
-        for y, line in enumerate(lines):
-            for x, char in enumerate(line):
-                self.bins[x,y] = char
 
 
     def get_power_consumption(self) -> int:
