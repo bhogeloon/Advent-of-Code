@@ -61,9 +61,16 @@ class Grid2D(Grid):
         '''
         Class for a two-dimensional grid. It requires the following attributes:
             - sizes: list or tuple containing exactly two values.
+            - default_value: The default value with which the cells are initially filled (or
+                None if not specified.)
             - cell_class: The class in which each cell is created in. The class must
                 support a default initialisation (without any arguments).
                 If this argument is not specified, all cells remain with content None.
+            - func: Function to be used to fill the initial values of the cels. This
+                preceedes the cell_class argument.
+                func needs to support non-positional arguments only. All arguments needed need to 
+                be provided as non-positional arguments to this function (they will be transferred 
+                to func using **kwargs), except for x and y, which will be provided by this function.
         '''
         super().__init__(**kwargs)
 
@@ -71,11 +78,32 @@ class Grid2D(Grid):
             raise RuntimeError("Not a Two Dimensional grid.")
 
         cell_class = kwargs.get('cell_class', None)
+        func = kwargs.get('func', None)
 
-        if cell_class != None:
+        if func != None:
+            # Remove all arguments not relevant to the function call
+            kwargs.pop('sizes', None)
+            kwargs.pop('cell_class', None)
+            kwargs.pop('default_value', None)
+            self.func_all_cells(**kwargs)
+        elif cell_class != None:
             for y in range(self.sizes[1]):
                 for x in range(self.sizes[0]):
                     self.grid[x,y] = cell_class()
+
+
+    def func_all_cells(self, func=None, **kwargs):
+        '''
+        This function will execute the function func on all cells. func needs to support
+        non-positional arguments only. All arguments needed need to be provided as
+        non-positional arguments to this function (they will be transferred to func using
+        **kwargs), except for x and y, which will be provided by this function
+        '''
+
+        if func != None:
+            for y in range(self.sizes[1]):
+                for x in range(self.sizes[0]):
+                    self.grid[x,y] = func(x=x, y=y, **kwargs)
 
 
 class Grid3D(Grid):
@@ -85,6 +113,8 @@ class Grid3D(Grid):
         '''
         Class for a 3-dimensional grid. It requires the following attributes:
             - sizes: list or tuple containing exactly 3 values.
+            - default_value: The default value with which the cells are initially filled (or
+                None if not specified.)
             - cell_class: The class in which each cell is created in. The class must
                 support a default initialisation (without any arguments).
                 If this argument is not specified, all cells remain with content None.
@@ -105,9 +135,14 @@ class Grid3D(Grid):
 
 if __name__ == '__main__':
     # grid = Grid3D(sizes=[3,2,2], cell_class = TestLib)
-    grid = Grid1D(sizes=3, default_value = 69)
+    # grid = Grid1D(sizes=3, default_value = 69)
+    grid = Grid2D(
+        sizes=[3,3],
+        func=lambda x=None,y=None : x+y,
+    )
+    # grid.func_all_cells(func=lambda x=None,y=None : x+y)
 
     print(grid.__class__)
 
     for cell in grid.grid.flat:
-        print(type(cell))
+        print(cell)
