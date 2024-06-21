@@ -49,12 +49,9 @@ class Engine(Grid2D):
         self.y_size = len(lines)
         super().__init__(
             sizes=(self.x_size,self.y_size),
+            func=lambda x=None,y=None,lines=lines: lines[y][x],
         )
         self.chars = self.grid
-
-        for y in range(self.y_size):
-            for x in range(self.x_size):
-                self.chars[x,y] = lines[y][x]
 
         self.part_numbers = []
         self.parts = []
