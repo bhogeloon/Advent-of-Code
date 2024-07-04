@@ -10,6 +10,8 @@ Problem description: See https://adventofcode.com/2016/day/4
 # Imports
 from pprint import pprint
 import re
+# From aoc_lib
+from sortable_dict import SortableDict
 
 
 # Constants
@@ -43,9 +45,10 @@ class Room:
         if len(self.checksum) != 5:
             raise RuntimeError('Invalid checksum: {}'.format(m.group(3)))
         
-        self.char_occ = {}
-        
+        self.char_occ = SortableDict()
         self.count_chars()
+        self.char_occ.sort_by_key()
+        self.char_occ.sort_by_value(reverse=True)
         
 
     def count_chars(self) -> None:
@@ -60,15 +63,29 @@ class Room:
             else:
                 self.char_occ[char] = 1
 
-        pprint(self.char_occ)
+
+    def is_real(self) -> bool:
+        '''Check if the room is real'''
+        return False
 
 
-class Rooms(list):
+class Rooms(list[Room]):
     '''List container class of Room objects'''
 
     def __init__(self, lines: list[str]) -> None:
         for line in lines:
             self.append(Room(line))
+
+
+    def get_sector_sum_of_real_rooms(self) -> int:
+        '''Get the solution of part 1'''
+        result = 0
+
+        for room in self:
+            if room.is_real():
+                result += room.sector_id
+
+        return result
 
 
 # Functions
@@ -81,6 +98,8 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
     Gv.test = kwargs.get('test', False)
 
     rooms = Rooms(lines)
+
+    return rooms.get_sector_sum_of_real_rooms()
 
     return 'part_1 ' + __name__
 
