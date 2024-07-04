@@ -12,6 +12,8 @@ We use the following classes:
 Part 1: Count all the character occurences of each room and sort those occurences on value and then key.
 Then get the top 5 and compare those with the checksum.
 
+Part 2: For every room name, add the offset (sector_id % 26) and make sure you get back to a if behind z.
+Then search for the string 'north' and print the sector_id
 """
 
 # Imports
@@ -22,6 +24,10 @@ from sortable_dict import SortableDict
 
 
 # Constants
+
+# Alphabet size
+AB_SIZE = 26
+AB_BASE = ord('a')
 
 
 # Global variables
@@ -81,6 +87,22 @@ class Room:
         top5 = set(list(self.char_occ.keys())[:5])
 
         return top5 == self.checksum
+    
+
+    def get_real_name(self) -> str:
+        '''Returns the real name of the room, preceeded by the sector_ID and followed by \n'''
+        offset = self.sector_id % AB_SIZE
+
+        real_name = ''
+
+        for char in self.name:
+            if char == '-':
+                real_name += ' '
+            else:
+                new_char = chr(((ord(char) - AB_BASE + offset) % AB_SIZE) + AB_BASE)
+                real_name += new_char
+
+        return str(self.sector_id) + ': ' + real_name + '\n'
 
 
 class Rooms(list[Room]):
@@ -98,6 +120,18 @@ class Rooms(list[Room]):
         for room in self:
             if room.is_real():
                 result += room.sector_id
+
+        return result
+
+
+    def get_real_room(self) -> list:
+        '''Returns all the real names of the rooms, preceed by their sector_ID'''
+        result = '\n'
+
+        for room in self:
+            real_name = room.get_real_name()
+            if re.search(r'north', real_name):
+                result += real_name
 
         return result
 
@@ -122,6 +156,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    rooms = Rooms(lines)
+
+    return rooms.get_real_room()
 
     return 'part_2 ' + __name__
 
