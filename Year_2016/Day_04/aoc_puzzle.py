@@ -3,7 +3,14 @@ Year 2016, Day 4
 
 Problem description: See https://adventofcode.com/2016/day/4
 
-<Include solution description>
+We use the following classes:
+- Room: Represents a room with a name, sector_id, checksum and a dict which keeps track of how many
+    occurences there are of each character (for this I use a inhereted class that I have extended with
+    sort methods)
+- Rooms: List container class of Room objects.
+
+Part 1: Count all the character occurences of each room and sort those occurences on value and then key.
+Then get the top 5 and compare those with the checksum.
 
 """
 
@@ -44,10 +51,14 @@ class Room:
 
         if len(self.checksum) != 5:
             raise RuntimeError('Invalid checksum: {}'.format(m.group(3)))
-        
+
+        # Create empty (sortable) dict        
         self.char_occ = SortableDict()
+        # Fill the dict with the character occurences
         self.count_chars()
+        # Sort on key (secondary)
         self.char_occ.sort_by_key()
+        # Sort on value (primary) and reverse order
         self.char_occ.sort_by_value(reverse=True)
         
 
@@ -66,7 +77,10 @@ class Room:
 
     def is_real(self) -> bool:
         '''Check if the room is real'''
-        return False
+        # Get first 5 keys in the char_occ dict and store in a set
+        top5 = set(list(self.char_occ.keys())[:5])
+
+        return top5 == self.checksum
 
 
 class Rooms(list[Room]):
