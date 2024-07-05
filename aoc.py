@@ -9,6 +9,7 @@ from read_input import read_input
 from importlib import import_module
 import argparse
 from datetime import datetime
+from get_aoc_module import get_aoc_module
 
 # Constants
 
@@ -55,12 +56,6 @@ argp.add_argument(
     help="Use old format",
 )
 
-argp.add_argument(
-    '--not_so_old_format', '-n', action='store_true',
-    help="Use not so old format",
-)
-
-
 args = argp.parse_args()
 
 
@@ -85,28 +80,14 @@ else:
 
 YEAR_DIR = "Year_{}".format(YEAR)
 DAY_DIR = "Day_{:02d}".format(DAY)
-INPUT_FILE = "{}/{}/{}".format(YEAR_DIR, DAY_DIR, input_fn)
+DIR = "{}/{}/".format(YEAR_DIR, DAY_DIR)
+INPUT_FILE = DIR + input_fn
 
-if args.old_format:
-    MODULE = "{year_dir}.{day_dir}.aoc_d{day:02d}{part}".format(
-        year_dir = YEAR_DIR,
-        day_dir = DAY_DIR,
-        day = DAY,
-        part = PART,
-    )
-elif args.not_so_old_format:
-    MODULE = "{year_dir}.{day_dir}.aoc_y{year}_d{day:02d}".format(
-        year_dir = YEAR_DIR,
-        day_dir = DAY_DIR,
-        day = DAY,
-        year = YEAR,
-    )
-else:
-    MODULE = "{year_dir}.{day_dir}.aoc_puzzle".format(
-        year_dir = YEAR_DIR,
-        day_dir = DAY_DIR,
-    )
-
+MODULE = "{year_dir}.{day_dir}.{module_name}".format(
+    year_dir = YEAR_DIR,
+    day_dir = DAY_DIR,
+    module_name = get_aoc_module(DIR)
+)
 
 # Import current script
 aoc_module = import_module(MODULE)

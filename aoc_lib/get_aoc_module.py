@@ -32,10 +32,11 @@ def get_aoc_module(dir: str) -> str:
         print("More than one module found. Using: {}".format(candidates[0]))
 
     # Strip off .py
+    return candidates[0][:-3]
 
 
 if __name__ == '__main__':
     curdir = os.curdir
-    dir = curdir + '/test-dir'
+    dir = curdir + '/test-dir/'
 
-    get_aoc_module(dir)
+    print(get_aoc_module(dir))
