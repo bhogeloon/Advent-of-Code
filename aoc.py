@@ -83,11 +83,19 @@ DAY_DIR = "Day_{:02d}".format(DAY)
 DIR = "{}/{}/".format(YEAR_DIR, DAY_DIR)
 INPUT_FILE = DIR + input_fn
 
-MODULE = "{year_dir}.{day_dir}.{module_name}".format(
-    year_dir = YEAR_DIR,
-    day_dir = DAY_DIR,
-    module_name = get_aoc_module(DIR)
-)
+if args.old_format:
+    MODULE = "{year_dir}.{day_dir}.aoc_d{day:02d}{part}".format(
+        year_dir = YEAR_DIR,
+        day_dir = DAY_DIR,
+        day = DAY,
+        part = PART,
+    )
+else:
+    MODULE = "{year_dir}.{day_dir}.{module_name}".format(
+        year_dir = YEAR_DIR,
+        day_dir = DAY_DIR,
+        module_name = get_aoc_module(DIR)
+    )
 
 # Import current script
 aoc_module = import_module(MODULE)
