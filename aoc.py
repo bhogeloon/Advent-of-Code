@@ -5,11 +5,11 @@ import os
 
 sys.path.append(os.getcwd() + '/aoc_lib')
 
-from read_input import read_input
+from aoc_file_handling import read_input
 from importlib import import_module
 import argparse
 from datetime import datetime
-from get_aoc_module import get_aoc_module
+from aoc_file_handling import get_aoc_module
 
 # Constants
 

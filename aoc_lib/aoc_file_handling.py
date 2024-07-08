@@ -1,10 +1,16 @@
 """
-This module contains a function to get the aoc module from a particular directory.
-It tries to get the best choice.
+This module contains several function for handling input, output and module files.
 """
 
 import os
 import re
+
+def read_input (filename):
+    '''Open the input file and store it in a list of lines'''
+    with open(filename,encoding='utf-8') as f:
+        data = f.read()
+
+    return data.splitlines()
 
 
 def _get_candidates(search_str: str, files: list[str]) -> list[str]:
