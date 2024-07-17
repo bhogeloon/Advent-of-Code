@@ -2,14 +2,16 @@
 
 import sys
 import os
+from importlib import import_module
+import argparse
+from datetime import datetime
 
 sys.path.append(os.getcwd() + '/aoc_lib')
 
 from aoc_file_handling import read_input
-from importlib import import_module
-import argparse
-from datetime import datetime
 from aoc_file_handling import get_aoc_module
+from aoc_file_handling import get_input_file
+
 
 # Constants
 
@@ -42,7 +44,7 @@ argp.add_argument(
 )
 
 argp.add_argument(
-    '--input', '-i', type=str, default=INPUT_FN,
+    '--input', '-i', type=str, default='',
     help="Input file name",
 )
 
@@ -73,32 +75,27 @@ if args.part:
     else:
         PART = args.part
 
-if args.test:
-    input_fn = 'test.txt'
-else:
-    input_fn = args.input
-
-YEAR_DIR = "Year_{}".format(YEAR)
-DAY_DIR = "Day_{:02d}".format(DAY)
-DIR = "{}/{}/".format(YEAR_DIR, DAY_DIR)
-INPUT_FILE = DIR + input_fn
+YEAR_DIR = f"Year_{YEAR}"
+DAY_DIR = f"Day_{DAY:02d}"
+DIR = f"{YEAR_DIR}/{DAY_DIR}/"
 
 if args.old_format:
-    MODULE = "{year_dir}.{day_dir}.aoc_d{day:02d}{part}".format(
-        year_dir = YEAR_DIR,
-        day_dir = DAY_DIR,
-        day = DAY,
-        part = PART,
-    )
+    MODULE = f"{YEAR_DIR}.{DAY_DIR}.aoc_d{DAY:02d}{PART}"
 else:
-    MODULE = "{year_dir}.{day_dir}.{module_name}".format(
-        year_dir = YEAR_DIR,
-        day_dir = DAY_DIR,
-        module_name = get_aoc_module(DIR)
-    )
+    MODULE = f"{YEAR_DIR}.{DAY_DIR}.{get_aoc_module(DIR)}"
 
 # Import current script
 aoc_module = import_module(MODULE)
+
+# Determine input file
+if args.test:
+    input_fn = get_input_file(DIR, 'test')
+elif args.input == '':
+    input_fn = get_input_file(DIR)
+else:
+    input_fn = args.input
+
+INPUT_FILE = DIR + input_fn
 
 lines = read_input(INPUT_FILE)
 # lines = read_input(DAY_DIR + '/example1.txt')
