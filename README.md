@@ -13,8 +13,12 @@ Each day directory contains at least three files:
 - test.txt: The input that is provided as example in the puzzle description. This can be used for
   debugging purposes.
 
+Please note that for all files, the names may have a suffix after the default part of the name. This can be be usefull to make clear what puzzle your working on (I've had a few occasions where I was editing the wrong file without being aware of it).
+
 I like to use classes, but in this case I don't bother to create a file for each class, so every
 solution is in one file.
+
+There is however a aoc_lib folder which contains some functions and classes which are used in multiple puzzles.
 
 To run the code, run the aoc.py module as follows:
 

@@ -1,3 +1,8 @@
+"""
+Main wrapper module for executing the aoc puzzle solutions
+See Readme.md for more information
+"""
+
 # Imports
 
 import sys
