@@ -118,8 +118,7 @@ else:
 end_time = datetime.now()
 total_time = end_time - START_TIME
 print()
-print("Time to execute: {} hours, {} minutes, {} seconds".format(
-    int(total_time.total_seconds() // 3600),
-    int(total_time.total_seconds()//60 % 60),
-    total_time.total_seconds() % 60,
-))
+hours = int(total_time.total_seconds() // 3600)
+mins = int(total_time.total_seconds()//60 % 60)
+secs = total_time.total_seconds() % 60
+print(f"Time to execute: {hours} hours, {mins} minutes, {secs} seconds")
