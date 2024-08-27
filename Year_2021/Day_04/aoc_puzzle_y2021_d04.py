@@ -13,6 +13,8 @@ We use the following classes:
 Part 1: For each ball, we mark each card and while doing that, check if it's a winner. If it is,
 collect the sum of all unmarked entries and multiply that by the ball nr.
 
+Part 2: Keep track of all the cards that have already won and if only one is left, calculate result.
+
 """
 
 # Imports
@@ -53,7 +55,8 @@ class CardEntry():
 class Card(Grid2D):
     '''Represents a 5x5 Bingo card'''
 
-    def __init__(self, lines: list[str]) -> None:
+    def __init__(self, lines: list[str], id: int) -> None:
+        self.id = id
         # Create a matrix based on lists
         matrix = []
 
@@ -68,6 +71,7 @@ class Card(Grid2D):
         )
 
         self.nrs = self.grid
+        self.won = False
 
 
     def mark_ball(self, ball: int) -> bool:
@@ -151,6 +155,17 @@ class Card(Grid2D):
         return result
 
 
+    def print(self) -> None:
+        for y in range(CARD_SIZE):
+            pline = ''
+            for x in range(CARD_SIZE):
+                if self.nrs[x,y].hit:
+                    pline += ' x '
+                else:
+                    pline += f'{self.nrs[x,y].nr:2} '
+            print(pline)
+
+
 class Cards(list[Card]):
     '''List container class of Card objects'''
 
@@ -176,10 +191,11 @@ class Cards(list[Card]):
             for i in range(5):
                 card_lines.append(lines.popleft())
 
-            self.append(Card(card_lines))
+            id = len(self)
+            self.append(Card(card_lines, id))
 
 
-    def draw_balls(self, balls: Balls) -> int:
+    def find_first_win(self, balls: Balls) -> int:
         '''This function will draw all balls until there is a winner.
         If there is a winner, the function will return the product of the last
         ball and the sum of all unmarked numbers'''
@@ -196,6 +212,33 @@ class Cards(list[Card]):
                         return ball * card.unmarked_sum()
 
 
+    def find_last_win(self, balls: Balls) -> int:
+        '''This function will draw all balls until all cards are a winner.
+        For the last winner, the function will return the product of the last
+        ball and the sum of all unmarked numbers'''
+
+        nr_of_cards_left = len(self)
+
+        # For all balls
+        for ball in balls:
+            # For each card
+            for card in self:
+                # If already won, ignore
+                if card.won:
+                    continue
+
+                # Mark the nrs on the card and if one found
+                elif card.mark_ball(ball):
+                    # Check if it's a winner and if so
+                    if card.is_winner():
+                        # Check if this is the only one left:
+                        if nr_of_cards_left == 1:
+                            # Calculate the result and return it
+                            return ball * card.unmarked_sum()
+                        else:
+                            card.won = True
+                            nr_of_cards_left -= 1
+
 
 # Functions
 
@@ -211,7 +254,7 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
     # Use the complete set to create the cards
     cards = Cards(deque(lines))
 
-    return cards.draw_balls(balls)
+    return cards.find_first_win(balls)
 
     return 'part_1 ' + __name__
 
@@ -220,6 +263,13 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    # Use first line to create the balls
+    balls = Balls(lines[0])
+    # Use the complete set to create the cards
+    cards = Cards(deque(lines))
+
+    return cards.find_last_win(balls)
 
     return 'part_2 ' + __name__
 
