@@ -62,4 +62,4 @@ if __name__ == '__main__':
 
     example_sortdict.sort_by_value_then_key()
 
-    pprint(example_sortdict)
+    pprint(dict(example_sortdict))
