@@ -5,12 +5,9 @@ Problem description: See https://adventofcode.com/2019/day/4
 
 The following classes are used:
 - Passwd: str class containing a password
-- Passwds: (List) container class of Passwd objects.
-    Uses the input numbers to create a list of passwords.
 
-For part 1 we don't even bother storing the actual passwords in a list.
-We just keep track of the valid passwords using the Passwd methods.
-
+Part 1: We just keep track of the valid passwords using the Passwd methods.
+Part 2: Use a modified function for the double char check
 
 """
 
@@ -57,28 +54,70 @@ class Passwd(str):
         return True
 
 
-    def validate(self):
+    def validate_p1(self):
         '''Checks for double values and incrementing'''
         return self.check_double() and self.check_inc()
 
 
-class Passwds(list[Passwd]):
-    '''List container class of Passwd objects.'''
-    def __init__(self, lines: list[str]) -> None:
-        input_parts = lines[0].split('-')
+    def check_real_double(self):
+        '''Retuns only True if the double is really only a double value
+        and no more'''
+        valid = False
+        occ = 1
+        prev_char = ''
+        for char in self:
+            if char == prev_char:
+                occ += 1
+                if occ == 2:
+                    valid = True
+                elif occ > 2:
+                    valid = False
+            else:
+                if valid:
+                    break
+                occ = 1
+            prev_char = char
 
-        min_passwd = int(input_parts[0])
-        max_passwd = int(input_parts[1])
+        return valid
 
-        self.nr_valid = 0
 
-        for i in range(min_passwd, max_passwd + 1):
-            passwd = Passwd(str(i))
-            if passwd.validate():
-                self.nr_valid += 1
+    def validate_p2(self):
+        '''Checks for double values and incrementing (modified for part 2)'''
+        return self.check_real_double() and self.check_inc()
+
 
 
 # Functions
+def get_valid_passwords_p1(lines: list[str]) -> int:
+    input_parts = lines[0].split('-')
+
+    min_passwd = int(input_parts[0])
+    max_passwd = int(input_parts[1])
+
+    nr_valid = 0
+
+    for i in range(min_passwd, max_passwd + 1):
+        passwd = Passwd(str(i))
+        if passwd.validate_p1():
+            nr_valid += 1
+
+    return nr_valid
+
+
+def get_valid_passwords_p2(lines: list[str]) -> int:
+    input_parts = lines[0].split('-')
+
+    min_passwd = int(input_parts[0])
+    max_passwd = int(input_parts[1])
+
+    nr_valid = 0
+
+    for i in range(min_passwd, max_passwd + 1):
+        passwd = Passwd(str(i))
+        if passwd.validate_p2():
+            nr_valid += 1
+
+    return nr_valid
 
 
 # Main functions
@@ -87,9 +126,7 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
 
     Gv.test = kwargs.get('test', False)
 
-    passwds = Passwds(lines)
-
-    return passwds.nr_valid
+    return get_valid_passwords_p1(lines)
 
     return 'part_1 ' + __name__
 
@@ -98,6 +135,8 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    return get_valid_passwords_p2(lines)
 
     return 'part_2 ' + __name__
 
