@@ -20,6 +20,7 @@ class Gv():
 # Classes
 
 class Passwd(str):
+    '''This is a str class which contains a password'''
     def check_double(self):
         prev_char = ''
         for char in self:
@@ -45,9 +46,8 @@ class Passwd(str):
         return self.check_double() and self.check_inc()
 
 
+
 # Functions
-
-
 
 
 # Main function
