@@ -20,6 +20,10 @@ Part 1: Consists of the following parts:
 - For this guard, find the minute in which he is most asleep.
 The product of these last two steps will be returned.
 
+Part 2:
+Skip step 4 and execute step 5 for all guards. Find the guard with the highest
+number of sleep occurences within a single minute.
+
 """
 
 # Imports
@@ -172,9 +176,9 @@ class Guard():
         return total_mins
 
 
-    def get_minute_most_asleep(self) -> int:
+    def get_minute_most_asleep(self) -> tuple[int]:
         '''Get the minute of the shift where the guard is most asleep'''
-        result = None
+        minute_result = None
         max_sleep_time = 0
 
         for minute in range(60):
@@ -184,14 +188,14 @@ class Guard():
                 if not day.awake_status[minute]:
                     total_sleep_time += 1
 
-            if result == None:
-                result = minute
+            if minute_result == None:
+                minute_result = minute
                 max_sleep_time = total_sleep_time
             elif total_sleep_time > max_sleep_time:
-                result = minute
+                minute_result = minute
                 max_sleep_time = total_sleep_time
 
-        return result
+        return (minute_result, max_sleep_time)
     
 
 class Guards(dict[Guard]):
@@ -251,6 +255,29 @@ class Guards(dict[Guard]):
 
         return laziest_guard
 
+
+    def get_guard_with_most_sleep_per_minute(self) -> int:
+        '''Find the guard with the most sleep on a specific minute.
+        Returns the product of the guard nr and the minute (the 
+        solution to part 2)'''
+        minute_result = None
+        guard_result = None
+        occ_result = 0
+
+        for guard in self.values():
+            (guard_minute, occurences) = guard.get_minute_most_asleep()
+
+            if guard_result == None:
+                guard_result = guard.nr
+                minute_result = guard_minute
+                occ_result = occurences
+            elif occurences > occ_result:
+                guard_result = guard.nr
+                minute_result = guard_minute
+                occ_result = occurences
+
+        return guard_result * minute_result
+
             
 # Functions
 
@@ -265,7 +292,7 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
     guards = Guards(events)
     guards.fill_schedule()
     laziest_guard = guards.find_laziest_guard()
-    min_most_asleep = guards[laziest_guard].get_minute_most_asleep()
+    (min_most_asleep, occurences) = guards[laziest_guard].get_minute_most_asleep()
 
     return laziest_guard * min_most_asleep
 
@@ -276,6 +303,12 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    events = Events(lines)
+    guards = Guards(events)
+    guards.fill_schedule()
+
+    return guards.get_guard_with_most_sleep_per_minute()
 
     return 'part_2 ' + __name__
 
