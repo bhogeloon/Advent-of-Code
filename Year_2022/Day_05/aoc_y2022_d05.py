@@ -3,6 +3,23 @@ Year 2022, Day 5
 
 Problem description: See https://adventofcode.com/2022/day/5
 
+Please note that for this puzzle I slightly modified the puzzle input
+manually to be able to read it more easily (that is: line by line in stead
+of top to bottom).
+
+The following classes are used:
+- Stack: A stack of crates (list class)
+- Stacks: List container class of Stack objects.
+
+Part 1: I started with creating the Stack objects using the first part
+of the puzzle input.
+Then I start to process each instruction line, moving them one at the time.
+Finally I just get all the top crates and report them.
+
+Part 2:
+Exactly the same, but instead of moving them one at the time, we're taking
+all of the crates in each step and put them on top of the new stack in the
+same order.
 """
 
 # Imports
@@ -24,6 +41,7 @@ class Stack(list):
 
     def __init__(self, line: str, i:int) -> None:
         self.extend(line.split())
+        # Store index
         self.i = i
         return
 
