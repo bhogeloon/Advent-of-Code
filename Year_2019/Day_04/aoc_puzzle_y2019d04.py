@@ -54,11 +54,6 @@ class Passwd(str):
         return True
 
 
-    def validate_p1(self):
-        '''Checks for double values and incrementing'''
-        return self.check_double() and self.check_inc()
-
-
     def check_real_double(self):
         '''Retuns only True if the double is really only a double value
         and no more'''
@@ -81,14 +76,18 @@ class Passwd(str):
         return valid
 
 
-    def validate_p2(self):
-        '''Checks for double values and incrementing (modified for part 2)'''
-        return self.check_real_double() and self.check_inc()
+    def validate(self, part=1):
+        '''Checks for double values and incrementing'''
+        if part == 1:
+            return self.check_double() and self.check_inc()
+        else:
+            return self.check_real_double() and self.check_inc()
 
 
 
 # Functions
-def get_valid_passwords_p1(lines: list[str]) -> int:
+
+def get_valid_passwords(lines: list[str], part=1) -> int:
     input_parts = lines[0].split('-')
 
     min_passwd = int(input_parts[0])
@@ -98,23 +97,7 @@ def get_valid_passwords_p1(lines: list[str]) -> int:
 
     for i in range(min_passwd, max_passwd + 1):
         passwd = Passwd(str(i))
-        if passwd.validate_p1():
-            nr_valid += 1
-
-    return nr_valid
-
-
-def get_valid_passwords_p2(lines: list[str]) -> int:
-    input_parts = lines[0].split('-')
-
-    min_passwd = int(input_parts[0])
-    max_passwd = int(input_parts[1])
-
-    nr_valid = 0
-
-    for i in range(min_passwd, max_passwd + 1):
-        passwd = Passwd(str(i))
-        if passwd.validate_p2():
+        if passwd.validate(part=part):
             nr_valid += 1
 
     return nr_valid
@@ -126,7 +109,7 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
 
     Gv.test = kwargs.get('test', False)
 
-    return get_valid_passwords_p1(lines)
+    return get_valid_passwords(lines)
 
     return 'part_1 ' + __name__
 
@@ -136,7 +119,7 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
 
     Gv.test = kwargs.get('test', False)
 
-    return get_valid_passwords_p2(lines)
+    return get_valid_passwords(lines, part=2)
 
     return 'part_2 ' + __name__
 
