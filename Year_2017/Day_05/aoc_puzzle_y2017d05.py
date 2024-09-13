@@ -10,6 +10,10 @@ Part 1: Walk through the list. Determine each time the new position.
 Exit if the position is outside the list. Just before moving to the new
 position, increase the value of the current postition.
 
+Part 2: Just add an extra check: if it is larger than 3, then decrease
+by one instead.
+This way it takes considerable longer to break out: more than 10 seconds.
+
 """
 
 # Imports
@@ -37,7 +41,7 @@ class OffsetList(list[int]):
             self.append(int(line))
 
 
-    def run(self) -> int:
+    def run(self, part=1) -> int:
         '''Run the OffsetList returning the number of steps it takes
         to get out of the list'''
         steps = 0
@@ -50,7 +54,12 @@ class OffsetList(list[int]):
             if new_pos < 0 or new_pos >= len(self):
                 return steps
             
-            self[cur_pos] += 1
+            # If part 2 and value is 3 or larger
+            if part == 2 and self[cur_pos] >= 3:
+                self[cur_pos] -= 1
+            else:
+                self[cur_pos] += 1
+
             cur_pos = new_pos
 
 
@@ -74,6 +83,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    offsets = OffsetList(lines)
+
+    return offsets.run(part=2)
 
     return 'part_2 ' + __name__
 
