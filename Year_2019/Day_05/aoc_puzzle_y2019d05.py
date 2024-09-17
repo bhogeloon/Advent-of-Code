@@ -19,6 +19,10 @@ Depending on the opcode, we either treat it as an operator (add an multiply),
 input or output function. The arguments are gathered either positional or as an
 immediate value depending on the mode.
 
+Part 2:
+Add the new jump functions as a separate function and the less_than and equal
+functions are added as operators.
+Then change the input value to 5.
 
 """
 
@@ -27,8 +31,6 @@ from pprint import pprint
 
 
 # Constants
-
-INPUT = 1
 
 
 # Global variables
@@ -43,13 +45,13 @@ class Gv():
 # Classes
 
 class Intcode():
-    def __init__(self, line:str) -> None:
+    def __init__(self, line:str, input=1) -> None:
         self.codes = [ int(nr) for nr in line.split(',') ]
         # Indicates where the program is
         self.ptr = 0
 
         # Any input is will be value 1:
-        self.input = INPUT
+        self.input = input
 
         # Create output list
         self.output = []
@@ -77,13 +79,15 @@ class Intcode():
                 self.get_input()
             elif opcode == 4:
                 self.store_output(modes)
-            elif opcode < 3:
+            elif opcode in (1,2,7,8):
                 self.operator(opcode, modes)
+            elif opcode in (5,6):
+                self.jump(opcode, modes)
             else:
                 raise RuntimeError(f'Unkown opcode {opcode}')
 
 
-    def operator(self, opcode, modes) -> None:
+    def operator(self, opcode: int, modes: int) -> None:
             '''Perform add or multiply operator'''
             # Determine mode per argument
             mode1 = modes % 10
@@ -110,11 +114,33 @@ class Intcode():
             elif opcode == 2:
                 self.codes[store_loc] = arg1 * arg2
 
+            # If opcode = 7
+            elif opcode == 7:
+                if arg1 < arg2:
+                    self.codes[store_loc] = 1
+                else:
+                    self.codes[store_loc] = 0
+
+            # If opcode = 8
+            elif opcode == 8:
+                if arg1 == arg2:
+                    self.codes[store_loc] = 1
+                else:
+                    self.codes[store_loc] = 0
+
             else:
-                raise RuntimeError("Unknown operator {}.".format(self.codes[self.ptr]))
+                raise RuntimeError(f"Unknown operator {opcode}.")
 
             # Jump ahead 4 positions
             self.ptr += 4
+
+
+    def less_than(self, modes: int) -> None:
+        '''Store 1 if less than, otherwise 0'''
+
+
+    def equal_to(self, modes: int) -> None:
+        '''Store 1 if equal, otherwise 0'''
 
 
     def get_input(self) -> None:
@@ -124,7 +150,7 @@ class Intcode():
         self.ptr += 2
 
 
-    def store_output(self, modes) -> None:
+    def store_output(self, modes: int) -> None:
         '''Store output in the output queue'''
         mode = modes % 10
 
@@ -135,6 +161,34 @@ class Intcode():
 
         self.output.append(output)
         self.ptr += 2
+
+
+    def jump(self, opcode: int, modes: int) -> None:
+        '''Change the ptr'''
+        # First check if you need to do something at all by checking first
+        # parameter
+        mode1 = modes % 10
+
+        if mode1 == 0:
+            action = self.codes[self.codes[self.ptr+1]]
+        else:
+            action = self.codes[self.ptr+1]
+
+        # If no action required
+        if (
+                (opcode == 5 and action == 0) or
+                (opcode == 6 and action != 0)
+            ):
+            self.ptr += 3
+            return
+        
+        # Now determine the new ptr position
+        mode2 = (modes // 10) % 10
+
+        if mode2 == 0:
+            self.ptr = self.codes[self.codes[self.ptr+2]]
+        else:
+            self.ptr = self.codes[self.ptr+2]
 
 
 # Functions
@@ -157,6 +211,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    intcode = Intcode(lines[0], input=5)
+
+    return intcode.run_program()
 
     return 'part_2 ' + __name__
 
