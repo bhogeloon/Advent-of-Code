@@ -12,12 +12,16 @@ and start the cycle again.
 At first, I started all over again from the start of the string after a match. Then
 it took 37 seconds to find the solution. After I changed the code, it took 0.16 seconds.
 
-
+Part 2: For each character in the alphabet, start with copying the polymer, removing all 
+matching characters and then run the process in part 1 over it. Record the polymer length
+and report the shortest one.
+Takes a bit less than 4 seconds.
 """
 
 # Imports
 from pprint import pprint
 import string
+from copy import deepcopy
 
 
 # Constants
@@ -80,7 +84,36 @@ class Polymer(list[str]):
     def print(self) -> None:
         '''Print the list as a string'''
         print(''.join(self))
+
+
+    def get_shortest_polymer(self) -> int:
+        '''Find the shortest polymer if one unit is removed.'''
+        # Start with the maximum value possible.
+        shortest_polymer = len(self)
+
+        for char_nr in range(26):
+            char = chr(ord('a') + char_nr)
+            new_polymer = deepcopy(self)
+            new_polymer.remove_unit(char)
+            new_polymer.process()
+            new_length = len(new_polymer)
+
+            if new_length < shortest_polymer:
+                shortest_polymer = new_length
+
+        return shortest_polymer
     
+
+    def remove_unit(self, unit: str) -> None:
+        '''Remove the specified unit character from the list'''
+        i = 0
+
+        while i < len(self):
+            if self[i].lower() == unit:
+                del self[i]
+            else:
+                i += 1
+
 
 # Functions
 
@@ -103,6 +136,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    polymer = Polymer(lines[0])
+
+    return polymer.get_shortest_polymer()
 
     return 'part_2 ' + __name__
 
