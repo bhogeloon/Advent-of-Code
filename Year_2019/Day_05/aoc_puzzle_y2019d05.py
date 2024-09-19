@@ -94,16 +94,8 @@ class Intcode():
             mode2 = (modes // 10) % 10
 
             # Get the arguments and the store location
-            if mode1 == 0:
-                arg1 = self.codes[self.codes[self.ptr+1]]
-            else:
-                arg1 = self.codes[self.ptr+1]
-
-            if mode2 == 0:
-                arg2 = self.codes[self.codes[self.ptr+2]]
-            else:
-                arg2 = self.codes[self.ptr+2]
-
+            arg1 = self.get_value_by_mode(mode1, self.ptr+1)
+            arg2 = self.get_value_by_mode(mode2, self.ptr+2)
             store_loc = self.codes[self.ptr+3]
 
             # If opcode = 1, add the args
@@ -153,12 +145,7 @@ class Intcode():
     def store_output(self, modes: int) -> None:
         '''Store output in the output queue'''
         mode = modes % 10
-
-        if mode == 0:
-            output = self.codes[self.codes[self.ptr+1]]
-        else:
-            output = self.codes[self.ptr+1]
-
+        output = self.get_value_by_mode(mode, self.ptr+1)
         self.output.append(output)
         self.ptr += 2
 
@@ -168,11 +155,7 @@ class Intcode():
         # First check if you need to do something at all by checking first
         # parameter
         mode1 = modes % 10
-
-        if mode1 == 0:
-            action = self.codes[self.codes[self.ptr+1]]
-        else:
-            action = self.codes[self.ptr+1]
+        action = self.get_value_by_mode(mode1, self.ptr+1)
 
         # If no action required
         if (
@@ -184,11 +167,15 @@ class Intcode():
         
         # Now determine the new ptr position
         mode2 = (modes // 10) % 10
+        self.ptr = self.get_value_by_mode(mode2, self.ptr+2)
 
-        if mode2 == 0:
-            self.ptr = self.codes[self.codes[self.ptr+2]]
+
+    def get_value_by_mode(self, mode: int, index: int) -> int:
+        '''Return the positional or immediate value, depending on the mode'''
+        if mode == 0:
+            return self.codes[self.codes[index]]
         else:
-            self.ptr = self.codes[self.ptr+2]
+            return self.codes[index]
 
 
 # Functions
