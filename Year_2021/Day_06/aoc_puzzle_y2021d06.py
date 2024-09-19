@@ -21,9 +21,10 @@ So, to further improve, we only calculate the scenario for 128 days and
 then calculate the scenario of the last few days by looking at each individual
 fish in the 128 days calculation.
 This way, it took less than half a second to get the answer, so I stopped there.
-Theoratically though, you could repeat this scenario for 64, 32, 16, 8, 4 and 2
-days, so you really only need the scenario for 1 day. This way you could even
-further improve the run time.
+Theoratically though, you could repeat this scenario for 64 and 32, and 16
+days, so you really only need the scenario for 16 days (8 days is too short as 
+you have to take into account that it can take 9 days before an offspring is
+created). This way you could even further improve the run time.
 """
 
 # Imports
