@@ -8,8 +8,8 @@ The following classes are used:
     answers (set), which contains all catagories answered with "yes".
 - PassengerGroups: List container class of PassengerGroup objects.
 
-Part 1: Use logical or to merge answer sets. Summarise the length of all answers 
-attribute.
+Part 1: Use logical or to merge answer sets. Summarise the length of all 
+answers attribute.
 
 Part 2: For the first person, fill the set and for all next person, use logical 
 and to merge the answer sets. Summarise in the end.
