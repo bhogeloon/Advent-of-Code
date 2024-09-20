@@ -6,11 +6,15 @@ Problem description: See https://adventofcode.com/2015/day/6
 The following classes are used:
 - Instruction: Contains a single instruction (one input line)
 - Instructions: List container class of Instruction objects
+- Light: Represents a light. It has two attribute:
+    - switch: Either on (True) or off (False). Used in part 1
+    - brightness: int value used in part 2
 - Lights: 2D grid object, containing the light states (True = on, False = off)
 
-Part 1: Simply follow each instruction. It takes 6.5 seconds to complete them
+Part 1: Simply follow each instruction. It takes ~14 seconds to complete them
 all.
 
+Part 2: Same functions, but this time use the brightness.
 """
 
 # Imports
@@ -59,13 +63,22 @@ class Instructions(list[Instruction]):
             self.append(Instruction(line))
 
 
+class Light():
+    '''Represents a light. It has two attributes:
+    - switch: Either on (True) or off (False). Used in part 1
+    - brightness: integer, used in part 2'''
+    def __init__(self) -> None:
+        self.switch = False
+        self.brightness = 0
+
+
 class Lights(Grid2D):
     '''Grid class containing the lights, which are booleans (True = on)
     and False=off'''
     def __init__(self) -> None:
         super().__init__(
             sizes=(GRID_SIZE,GRID_SIZE),
-            default_value = False,
+            cell_class = Light,
         )
 
 
@@ -74,7 +87,7 @@ class Lights(Grid2D):
         result = 0
 
         for light in self.grid.flat:
-            if light:
+            if light.switch:
                 result += 1
 
         return result
@@ -91,13 +104,27 @@ class Lights(Grid2D):
         for y in range(instr.y1,instr.y2+1):
             for x in range(instr.x1,instr.x2+1):
                 if instr.action == 'turn on':
-                    self.grid[x,y] = True
+                    self.grid[x,y].switch = True
+                    self.grid[x,y].brightness += 1
                 elif instr.action == 'turn off':
-                    self.grid[x,y] = False
+                    self.grid[x,y].switch = False
+                    if self.grid[x,y].brightness > 0:
+                        self.grid[x,y].brightness -= 1
                 elif instr.action == 'toggle':
-                    self.grid[x,y] = not(self.grid[x,y])
+                    self.grid[x,y].switch = not(self.grid[x,y].switch)
+                    self.grid[x,y].brightness += 2
                 else:
                     raise RuntimeError(f'Unkown action {instr.action}')
+
+
+    def total_brightness(self) -> int:
+        '''Returns the total amount of brightness'''
+        result = 0
+
+        for light in self.grid.flat:
+            result += light.brightness
+
+        return result
 
 
 # Functions
@@ -122,6 +149,12 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    lights = Lights()
+    instrs = Instructions(lines)
+    lights.process_instructions(instrs)
+
+    return lights.total_brightness()
 
     return 'part_2 ' + __name__
 
