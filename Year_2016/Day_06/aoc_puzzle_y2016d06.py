@@ -10,6 +10,9 @@ The following class is used:
 Part 1: Keep a Counter object per column and then use the most_common function
 to get the character per column.
 
+Part 2: Now use the most_common function to get all the occurences and then 
+check the last one in the list.
+
 """
 
 # Imports
@@ -63,6 +66,17 @@ class Messages(Grid2D):
         return result
 
 
+    def get_real_message(self) -> str:
+        '''Get the least common char for each column'''
+        result = ''
+
+        for c in range(self.x_size):
+            # Now retrieve all most_common chars and retrieve the last one
+            result += self.col_counters[c].most_common()[-1][0]
+
+        return result
+
+
 # Functions
 
 
@@ -83,6 +97,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    msgs = Messages(lines)
+
+    return msgs.get_real_message()
 
     return 'part_2 ' + __name__
 
