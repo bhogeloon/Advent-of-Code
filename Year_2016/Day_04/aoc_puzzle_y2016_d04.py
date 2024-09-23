@@ -19,6 +19,7 @@ Then search for the string 'north' and print the sector_id
 # Imports
 from pprint import pprint
 import re
+from collections import Counter
 # From aoc_lib
 from sortable_dict import SortableDict
 
@@ -58,9 +59,7 @@ class Room:
         if len(self.checksum) != 5:
             raise RuntimeError('Invalid checksum: {}'.format(m.group(3)))
 
-        # Create empty (sortable) dict        
-        self.char_occ = SortableDict()
-        # Fill the dict with the character occurences
+        # Create SortableDict with the character occurences
         self.count_chars()
         # Sort on key (secondary)
         self.char_occ.sort_by_key()
@@ -70,15 +69,15 @@ class Room:
 
     def count_chars(self) -> None:
         '''Count all the chars in the name and store in char_occ'''
-        for char in self.name:
-            # Ignore if dash
-            if char == "-":
-                continue
+        ctr = Counter(self.name)
 
-            if char in self.char_occ.keys():
-                self.char_occ[char] += 1
-            else:
-                self.char_occ[char] = 1
+        # Delete any '-'s
+        if '-' in ctr.keys():
+            del ctr['-']
+
+        # Then store result in a Sortable Dict
+        self.char_occ = SortableDict(ctr)        
+
 
 
     def is_real(self) -> bool:
