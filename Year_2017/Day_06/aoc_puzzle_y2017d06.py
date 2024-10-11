@@ -10,6 +10,9 @@ Part 1: Loop through the redestribution process, keeping a list of hash values
 of each list situation. If a hash value is already in the list, break the
 loop.
 
+Part 2: Do the same as in part 1, but substract the index value of the found
+matching hash.
+
 """
 
 # Imports
@@ -53,6 +56,8 @@ class MemoryBanks(list[int]):
 
             # If hash already found, terminate
             if cur_hash in self.found_hashes:
+                # Store the answer to part 2
+                self.loop_size = steps - self.found_hashes.index(cur_hash)
                 return steps
             
             # Store hash
@@ -105,6 +110,11 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    membanks = MemoryBanks(lines[0])
+    membanks.find_loop()
+
+    return membanks.loop_size
 
     return 'part_2 ' + __name__
 
