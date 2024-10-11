@@ -8,10 +8,14 @@ The following classes are used:
 - Dir: a Directory containing files or other Dirs
 - Filesystem: the total filesystem, containing also the main Dir (/)
 
-For part 1: Build the filesystem. Then calculate the size of each dir.
+Part 1: Build the filesystem. Then calculate the size of each dir.
 If another dir is encountered then start the calculation recursively.
 Once calculated, determine if the filesize is below maximum and if so,
 add to the total.
+
+Part 2: Go through the same function as part 1 to determine all dir sizes
+Then search in each directory (again recursively) for any directory which 
+would free enough space. Put them all in a list and report the minimum.
 
 """
 
