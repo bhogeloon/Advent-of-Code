@@ -3,6 +3,16 @@ Year 2022, Day 7
 
 Problem description: See https://adventofcode.com/2022/day/7
 
+The following classes are used:
+- File: a File with a certain size
+- Dir: a Directory containing files or other Dirs
+- Filesystem: the total filesystem, containing also the main Dir (/)
+
+For part 1: Build the filesystem. Then calculate the size of each dir.
+If another dir is encountered then start the calculation recursively.
+Once calculated, determine if the filesize is below maximum and if so,
+add to the total.
+
 """
 
 # Imports
@@ -24,7 +34,8 @@ class Gv():
 # Classes
 
 class FileSystem():
-    '''Class that holds the top directory and manages all file and dir actions'''
+    '''Class that holds the top directory and manages all file and dir 
+    actions'''
 
     # Class variables
     total = 0
@@ -78,8 +89,13 @@ class FileSystem():
             content_words = content_line.split()
 
             if content_words[0] == 'dir':
-                self.curdir.dirs[content_words[1]] = Dir(content_words[1], self.curdir)
+                # Create new dir in current dir
+                self.curdir.dirs[content_words[1]] = Dir(
+                    content_words[1],
+                    self.curdir,
+                )
             else:
+                # Create new file in current dir
                 self.curdir.files.append(File(content_line, self.curdir))
 
 
@@ -99,14 +115,16 @@ class FileSystem():
 
 
     def find_lowest_dir_to_delete(self) -> int:
-        '''find the lowest size possible to delete to fullfill the requirement'''
+        '''find the lowest size possible to delete to fullfill the 
+        requirement'''
 
         found_sizes = self.topdir.find_lowest_dir_to_delete()
         return min(found_sizes)
 
 
 class Dir():
-    '''A dir has a list of files, a dict of dirs (with name as key) and a parent dir'''
+    '''A dir has a list of files, a dict of dirs (with name as key) and a 
+    parent dir'''
 
     def __init__(self, name: str, parent = None) -> None:
         self.name = name
@@ -139,7 +157,8 @@ class Dir():
 
 
     def find_lowest_dir_to_delete(self) -> list:
-        '''find the lowest size possible to delete to fullfill the requirement'''
+        '''find the lowest size possible to delete to fullfill the 
+        requirement'''
 
         found_sizes = []
 
