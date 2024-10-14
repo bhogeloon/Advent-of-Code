@@ -11,6 +11,11 @@ The following classes are used:
 Part 1: Calculate the Fuel required for each position and report the minimum
 (Takes 1.5 seconds)
 
+Part 2: First make a list of all the fuel consumption by the amount of steps
+(so that we don't have to calculate that for each crab for each position).
+Then go through the same function as in part 1, adding the amount in the list
+along the way.
+
 """
 
 # Imports
@@ -55,6 +60,29 @@ class Positions(list[int]):
                 self[i] += abs(crab-i)
 
 
+    def calculate_fuel_increasing(self) -> None:
+        '''Fill the list with the fuel that is required to align the crabs
+        to this position using the increasing fuel consumption in part 2'''
+        # Create a fuel consumption list for each amount of steps
+        fuel_cons = {}
+        fuel = 0
+        for i in range(len(self)+1):
+            fuel += i
+            fuel_cons[i] = fuel
+
+        if Gv.test:
+            print(fuel_cons)
+            print(self)
+            print(self.crabs)
+            
+        for i in range(len(self)):
+            for crab in self.crabs:
+                steps = abs(crab-i)
+                self[i] += fuel_cons[steps]
+        if Gv.test:
+            print(self)
+
+
 
 # Functions
 
@@ -78,6 +106,12 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    crabs = Crabs(lines[0])
+    positions = Positions(crabs)
+    positions.calculate_fuel_increasing()
+
+    return min(positions)
 
     return 'part_2 ' + __name__
 
