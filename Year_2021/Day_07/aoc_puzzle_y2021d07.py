@@ -8,8 +8,7 @@ The following classes are used:
 - Positions: A list class containing all possible ending positions. The value
     contains the amount of fuel required for that.
 
-Part 1: Calculate the Fuel required for each position and report the minimum
-(Takes 1.5 seconds)
+Part 1: Calculate the Fuel required for each position and report the minimum.
 
 Part 2: First make a list of all the fuel consumption by the amount of steps
 (so that we don't have to calculate that for each crab for each position).
