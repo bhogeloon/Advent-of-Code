@@ -18,6 +18,12 @@ Part 1:
 - Go through the borders of the Map and mark all nearest targets there as 
     being infinite
 - Report the largest area for all Targets which are not marked as infinite.
+
+Part 2:
+After the first two steps of part 1, go through the whole map and add all
+the distances to the targets together. After that count all locations with
+a small enough total distance.
+
 """
 
 # Imports
@@ -30,6 +36,8 @@ from grid import Grid2D
 
 # Grid positions are all below 400
 GRID_SIZE = 400
+MAX_DISTANCE = 10000
+MAX_DISTANCE_TEST = 32
 
 # Global variables
 
@@ -48,6 +56,8 @@ class Location:
         self.is_target = False
         self.nearest_target = None
         self.distance = 2 * GRID_SIZE
+        # Total distance to all targets
+        self.total_distance = 0
 
 
     def mark_infinite(self) -> None:
@@ -60,6 +70,11 @@ class Map(Grid2D):
     '''The grid map of locations'''
     def __init__(self) -> None:
         super().__init__(sizes=(GRID_SIZE,GRID_SIZE), cell_class=Location)
+
+        if Gv.test:
+            self.max_dist = MAX_DISTANCE_TEST
+        else:
+            self.max_dist = MAX_DISTANCE
 
 
     def calculate_nearest_target(self, targets: Targets):
@@ -88,6 +103,17 @@ class Map(Grid2D):
                     loc.nearest_target.area += 1
 
 
+    def calculate_total_distance(self, targets: Targets) -> None:
+        '''Calculate per location the total distance to all targets'''
+        for y in range(GRID_SIZE):
+            for x in range(GRID_SIZE):
+                loc = self.grid[x,y]
+
+                for target in targets:
+                    this_dist = target.get_distance_to_loc(x,y)
+                    loc.total_distance += this_dist
+
+
     def mark_infinite(self) -> None:
         '''Mark all nearest targets at the borders as infinite'''
         for x in range(GRID_SIZE):
@@ -97,6 +123,17 @@ class Map(Grid2D):
         for y in range(GRID_SIZE):
             self.grid[0,y].mark_infinite()
             self.grid[GRID_SIZE-1,y].mark_infinite()
+
+
+    def get_safe_area(self) -> int:
+        '''Calculate the total area of safe locations'''
+        area_size = 0
+
+        for loc in self.grid.flat:
+            if loc.total_distance < self.max_dist:
+                area_size += 1
+
+        return area_size
 
 
 class Target:
@@ -161,6 +198,12 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    map = Map()
+    targets = Targets(lines, map)
+    map.calculate_total_distance(targets)
+
+    return map.get_safe_area()
 
     return 'part_2 ' + __name__
 
