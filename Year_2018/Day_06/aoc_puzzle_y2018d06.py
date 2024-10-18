@@ -159,7 +159,7 @@ class Target:
 
 class Targets(list[Target]):
     '''List container class of Target objects'''
-    def __init__(self, lines: str, map: Map) -> None:
+    def __init__(self, lines: list[str], map: Map) -> None:
         for line in lines:
             self.append(Target(line, map))
 
