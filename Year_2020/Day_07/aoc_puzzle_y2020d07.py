@@ -12,6 +12,8 @@ object and the 'nr' key indicates the amount of bags of that colour present.
 Part 1: Build the Bags object with all the puzzle input information. Then 
 for each bag, go through the content recursively until you find the shiny 
 gold bag. If so, increase the counter.
+
+Part 2: Recursively calculate the amount of bags inside the shiny gold one.
 """
 
 # Imports
@@ -74,6 +76,16 @@ class Bag:
                 return True
         
         return False
+    
+
+    def get_nr_of_bags(self) -> int:
+        '''Return the number of bags that fits into this one'''
+        result = 0
+
+        for item in self.content:
+            result += item['nr'] + item['nr'] * item['bag'].get_nr_of_bags()
+
+        return result
 
 
 class Bags(dict[Bag]):
@@ -126,6 +138,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    bags = Bags(lines)
+
+    return bags[CHECK_COLOUR].get_nr_of_bags()
 
     return 'part_2 ' + __name__
 
