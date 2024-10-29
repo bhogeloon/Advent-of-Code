@@ -9,6 +9,10 @@ The following classes are used:
 
 Part 1: For each Tree, check the neighbors until the grid border in each
 direction. If a Tree is visible in one direction, then it is visible.
+
+Part 2: For each Tree, look in each direction for a 'blocking' Tree, i.e.
+same size or bigger. Count the number of trees visible in each direction and
+multiply them.
 """
 
 # Imports
@@ -105,22 +109,39 @@ class Tree():
 
 
     def check_scenic_score(self) -> None:
+        '''Check the scenic score for this tree'''
         x = self.x
         y = self.y
         wood = self.wood
 
+        # If on border, score = 0
+        if (
+            x == 0 or
+            y == 0 or
+            x == self.wood.x_size-1 or
+            y == self.wood.y_size-1
+        ):
+            self.scenic_score = 0
+            return
+
+        # Total score of all directions multiplied
         total_score = 1
 
+        # Score for current direction
         this_score = 1
 
+        # Check left side
         for x_nb in range(x-1, 0, -1):
+            # If a blocking tree is found exit
             if wood.trees[x_nb,y].height >= wood.trees[x,y].height:
                 break
 
             this_score += 1
 
+        # Update total score
         total_score *= this_score
 
+        # Repeat for right side
         this_score = 1
 
         for x_nb in range(x+1, wood.x_size-1):
@@ -131,6 +152,7 @@ class Tree():
 
         total_score *= this_score
 
+        # Repeat for upper side
         this_score = 1
 
         for y_nb in range(y-1, 0, -1):
@@ -141,6 +163,7 @@ class Tree():
 
         total_score *= this_score
 
+        # Repeat for down side
         this_score = 1
 
         for y_nb in range(y+1, wood.y_size-1):
@@ -155,6 +178,7 @@ class Tree():
 
         if total_score > wood.max_scenic_score:
             wood.max_scenic_score = total_score
+            wood.max_scenic_coord = (x,y)
 
 
 class Wood(Grid2D):
@@ -179,7 +203,6 @@ class Wood(Grid2D):
         )
 
         self.trees = self.grid
-        # self.tree_scenic_scores = np.ones_like(self.trees)
 
 
     def print_heigths(self) -> None:
@@ -200,13 +223,11 @@ class Wood(Grid2D):
 
 
     def check_scenic_score(self) -> None:
+        '''Determine scenic score for each tree'''
         self.max_scenic_score = 0
 
         for tree in self.trees.flat:
             tree.check_scenic_score()
-
-    def get_max_scenic_score(self) -> int:
-        return self.tree_scenic_scores.max()
 
 
 # Functions
@@ -234,6 +255,14 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    wood = Wood(lines)
+    wood.check_scenic_score()
+
+    if Gv.test:
+        print(wood.max_scenic_coord)
+
+    return wood.max_scenic_score
 
     return 'part_2 ' + __name__
 

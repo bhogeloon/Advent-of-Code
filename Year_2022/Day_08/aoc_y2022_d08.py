@@ -8,7 +8,6 @@ Problem description: See https://adventofcode.com/2022/day/8
 # Imports
 from pprint import pprint
 import numpy as np
-from grid import Grid2D
 
 # Constants
 
@@ -89,6 +88,16 @@ class Tree():
             return
         
         return
+    
+
+    @property
+    def scenic_score(self) -> int:
+        return self.wood.tree_scenic_scores[self.x, self.y]
+    
+
+    @scenic_score.setter
+    def scenic_score(self, value: int) -> None:
+        self.wood.tree_scenic_scores[self.x, self.y] = value
 
 
     def check_scenic_score(self) -> None:
@@ -144,29 +153,15 @@ class Tree():
             wood.max_scenic_score = total_score
 
 
-class Wood(Grid2D):
+class Wood():
     '''Matrix of Trees'''
 
     def __init__(self, lines: list[str]) -> None:
         self.x_size = len(lines[0])
         self.y_size = len(lines)
-
-        def set_tree_heigth( 
-            lines=lines,
-            x= None,
-            y=None,
-            wood=self
-        ) -> None:
-            '''Function to Initialise Tree objects'''
-            return Tree(lines[y][x], x, y, wood)
-
-        super().__init__(
-            sizes=(self.x_size,self.y_size),
-             func=set_tree_heigth,
-        )
-
-        self.trees = self.grid
-        # self.tree_scenic_scores = np.ones_like(self.trees)
+        self.trees = np.full((self.x_size, self.y_size), None)
+        self.tree_scenic_scores = np.ones_like(self.trees)
+        self.set_tree_heigths(lines)
 
 
     def print_heigths(self) -> None:
@@ -177,8 +172,10 @@ class Wood(Grid2D):
             print(line)
 
 
-    def set_tree_heigths(self, lines: list[str], x= None, y=None) -> None:
-        self.trees[x,y] = Tree(lines[y][x], x, y, self)
+    def set_tree_heigths(self, lines: list[str]) -> None:
+        for x in range(self.x_size):
+            for y in range(self.y_size):
+                self.trees[x,y] = Tree(lines[y][x], x, y, self)
 
 
     def check_visibility(self) -> None:
@@ -205,7 +202,7 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
 
     wood = Wood(lines)
 
-    wood.print_heigths()
+    # wood.print_heigths()
 
     wood.check_visibility()
 
@@ -229,3 +226,4 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
 
 if __name__ == '__main__':
     pass
+	
