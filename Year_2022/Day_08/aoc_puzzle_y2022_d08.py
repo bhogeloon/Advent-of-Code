@@ -3,12 +3,18 @@ Year 2022, Day 8
 
 Problem description: See https://adventofcode.com/2022/day/8
 
+The following classes are used:
+- Tree: A tree with a certain height
+- Wood: A 2DGrid collection of Tree objects
+
+Part 1: For each Tree, check the neighbors until the grid border in each
+direction. If a Tree is visible in one direction, then it is visible.
 """
 
 # Imports
 from pprint import pprint
-import numpy as np
 from grid import Grid2D
+
 
 # Constants
 
@@ -16,8 +22,11 @@ from grid import Grid2D
 # Global variables
 
 class Gv():
-    '''Class to store global variables that are immutable, so they can be
-    reassigned within a function'''
+    '''Class to store global variables'''
+
+    # Variable that can be used to indicate we're using the test input
+    test = False
+
 
 # Classes
 
@@ -35,18 +44,19 @@ class Tree():
 
     def check_visibility(self) -> None:
         '''Check visibility of tree'''
-
         x = self.x
         y = self.y
         wood = self.wood
 
         visible = True
 
+        # Check for each left neighbor if it is smaller
         for neighbor_x in range(x):
             if wood.trees[neighbor_x,y].height >= wood.trees[x,y].height:
                 visible = False
                 break
 
+        # If visible then increase wood counter and exit
         if visible:
             wood.trees[x,y].visible = True
             wood.visible_trees += 1
@@ -54,6 +64,7 @@ class Tree():
         
         visible = True
 
+        # Do the check for all right neighbors
         for neighbor_x in range(x+1, wood.x_size):
             if wood.trees[neighbor_x,y].height >= wood.trees[x,y].height:
                 visible = False
@@ -66,6 +77,7 @@ class Tree():
 
         visible = True
 
+        # Check all upper neighbors
         for neighbor_y in range(y):
             if wood.trees[x,neighbor_y].height >= wood.trees[x,y].height:
                 visible = False
@@ -78,6 +90,7 @@ class Tree():
         
         visible = True
 
+        # Check all lower neighbors
         for neighbor_y in range(y+1, wood.y_size):
             if wood.trees[x,neighbor_y].height >= wood.trees[x,y].height:
                 visible = False
@@ -170,6 +183,7 @@ class Wood(Grid2D):
 
 
     def print_heigths(self) -> None:
+        '''Function to check if the input was read successfully'''
         for y in range(self.y_size):
             line = ''
             for x in range(self.x_size):
@@ -177,12 +191,8 @@ class Wood(Grid2D):
             print(line)
 
 
-    def set_tree_heigths(self, lines: list[str], x= None, y=None) -> None:
-        self.trees[x,y] = Tree(lines[y][x], x, y, self)
-
-
     def check_visibility(self) -> None:
-
+        '''Check the visibility of each Tree'''
         self.visible_trees = 0
 
         for tree in self.trees.flat:
@@ -199,13 +209,19 @@ class Wood(Grid2D):
         return self.tree_scenic_scores.max()
 
 
+# Functions
+
+
 # Main functions
 def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
-    '''Main function'''
+    '''Main function for the part 1 solution'''
+
+    Gv.test = kwargs.get('test', False)
 
     wood = Wood(lines)
 
-    wood.print_heigths()
+    if Gv.test:
+        wood.print_heigths()
 
     wood.check_visibility()
 
@@ -215,14 +231,9 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
 
 
 def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
-    '''Main function'''
+    '''Main function for the part 2 solution'''
 
-    wood = Wood(lines)
-    wood.check_scenic_score()
-
-    print(wood.get_max_scenic_score())
-
-    return wood.max_scenic_score
+    Gv.test = kwargs.get('test', False)
 
     return 'part_2 ' + __name__
 
