@@ -23,6 +23,9 @@ possible, just skip it.
 Store the calculated value in the target Wire object.
 Keep repeating this process until eventually the signal value of Wire 'a' is
 known.
+
+Part 2: Reset all signals to None after preserving the signal on wire a. Then
+store that on wire b and redo the evaluation part.
 """
 
 # Imports
@@ -34,6 +37,7 @@ import re
 # Constants
 
 TARGET = 'a'
+TARGET2 = 'b'
 TARGET_TEST = 'defghixy'
 
 # Global variables
@@ -163,12 +167,14 @@ class Gate:
         self.target.print()
 
 
-class Gates(list[Gate]):
-    '''List container class of Gate objects'''
+class Gates(dict[str, Gate]):
+    '''Dict container class of Gate objects. The key is the wire id of the
+    target wire'''
 
     def __init__(self, lines: list[str]) -> None:
         for line in lines:
-            self.append(Gate(line))
+            new_gate = Gate(line)
+            self[new_gate.target.id] = new_gate
 
 
     def evaluate(self) -> None:
@@ -179,11 +185,24 @@ class Gates(list[Gate]):
             solution_target = TARGET
 
         while Gate.wires[solution_target].signal == None:
-            for gate in self:
+            for gate in self.values():
                 gate.evaluate()
             
             if Gv.test:
                 pprint([Gate.wires[w].signal for w in TARGET_TEST])
+
+    def reset(self) -> None:
+        '''Resets all the gates after preserving the state of wire a and then
+        store that in wire b'''
+        # Preserve value of wire a
+        orig_signal = self[TARGET].target.signal
+
+        # Reset all signals to none
+        for wire in Gate.wires.values():
+            wire.signal = None
+
+        # Store original a value in b
+        self[TARGET2].target.signal = orig_signal
 
 
 # Functions
@@ -209,7 +228,16 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
 def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
-    Gv.test = kwargs.get('test', False)
+    # This solution does not work on the test data, so no use using the
+    # -t option
+    # Gv.test = kwargs.get('test', False)
+
+    gates = Gates(lines)
+    gates.evaluate()
+    gates.reset()
+    gates.evaluate()
+
+    return Gate.wires[TARGET].signal
 
     return 'part_2 ' + __name__
 
