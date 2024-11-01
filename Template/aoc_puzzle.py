@@ -8,6 +8,7 @@ Problem description: See https://adventofcode.com/20xx/day/xx
 """
 
 # Imports
+from __future__ import annotations
 from pprint import pprint
 
 
