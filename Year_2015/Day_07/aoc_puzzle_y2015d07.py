@@ -14,7 +14,7 @@ The following classes are used:
     - operands: A tuple of one or two operands. Each operand can hold either:
         - An integer value
         - A Wire object
-- Gates: A list container class of Gate objects
+- Gates: A dict container class of Gate objects, using the target id as key.
 
 Part 1: Go through the list of Gates and try to evaluate the bitwise operation.
 This can only be done when all the operands or known, i.e. either an integer
