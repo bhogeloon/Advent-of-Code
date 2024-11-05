@@ -14,6 +14,10 @@ Part 1: Split the input in normal and hypernet sequences. Then look for an
 ABBA in the hypernet sequences. If so, no TLS support. If not, look for an 
 ABBA in the normal sequences, If so, TLS is supported.
 
+Part 2: Go through all normal sequences and collect all three letter 
+combinations that adhere to aba. Then turn them inside out (bab) and go
+through all hypernet sequences to see of such combination is part of the
+sequence. If so: it supports SSL.
 """
 
 # Imports
@@ -56,6 +60,28 @@ class Sequence:
                 return True
 
         return False
+    
+
+    def get_aba(self) -> list:
+        '''Return a list of three letter sequences which adhere to aba'''
+        abas = []
+        for i in range(len(self.seq)-2):
+            sub_seq = self.seq[i:i+3]
+
+            if (
+                sub_seq[0] == sub_seq[2] and
+                sub_seq[0] != sub_seq[1]
+            ):
+                abas.append(sub_seq)
+
+        return abas
+    
+
+    def check_bab(self, aba: str) -> bool:
+        '''Check if the word is part of the sequence'''
+        # Reverse aba in bab
+        bab = aba[1] + aba[0] + aba[1]
+        return bab in self.seq
 
 
 class Ipv7Address:
@@ -92,6 +118,23 @@ class Ipv7Address:
             
         # If nothing found
         return False
+    
+
+    def ssl_support(self) -> bool:
+        '''Check if the IP address supports SSL'''
+        # This will contain the list of aba combinations
+        abas = []
+        for seq in self.seqs:
+            abas.extend(seq.get_aba())
+
+        # Check all combinations
+        for aba in abas:
+            for seq in self.hyp_seqs:
+                if seq.check_bab(aba):
+                    return True
+
+        # If not found
+        return False
 
 
 class Ipv7AddressList(list[Ipv7Address]):
@@ -108,6 +151,17 @@ class Ipv7AddressList(list[Ipv7Address]):
 
         for ip in self:
             if ip.tls_support():
+                nr += 1
+
+        return nr
+    
+
+    def get_ssl_ips(self) -> int:
+        '''Return the amount of ips that support SSL'''
+        nr = 0
+
+        for ip in self:
+            if ip.ssl_support():
                 nr += 1
 
         return nr
@@ -133,6 +187,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    ips = Ipv7AddressList(lines)
+
+    return ips.get_ssl_ips()
 
     return 'part_2 ' + __name__
 
