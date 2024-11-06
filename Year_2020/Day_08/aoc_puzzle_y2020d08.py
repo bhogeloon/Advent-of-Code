@@ -3,8 +3,16 @@ Year 2020, Day 8
 
 Problem description: See https://adventofcode.com/2020/day/8
 
-<Include solution description>
+The following classes are used:
+- Instruction: Contains the instruction details (type and value)
+- BootCode: List container class of Instruction objects
 
+Part 1: Keep track of the visited indexes in a set and if the index is seen
+before, quit the loop and report the value of the acc.
+
+Part 2: Go through all the instruction and swap jmp for nop. If a swap has
+been done, run the detec_loop function again. If no loop is detected, report
+the acc.
 """
 
 # Imports
@@ -52,9 +60,23 @@ class BootCode(list[Instruction]):
         self.acc = 0
 
     def detect_loop(self) -> None:
-        '''Run the code until a loop is detected'''
+        '''Run the code until a loop is detected or until the end of the
+        program is detected. If a loop is detected or the code runs out its
+        index range, the function will return True. If the end is properly
+        reached, the function will return False'''
         # Repeat until instruction is already seen
-        while self.ptr not in self.visited:
+        while True:
+            if (
+                self.ptr in self.visited or
+                self.ptr < 0 or
+                self.ptr > len(self)
+            ):
+                return True
+            
+            # Return False if the ptr is just past the end
+            if self.ptr == len(self):
+                return False
+            
             # Register current pointer
             self.visited.add(self.ptr)
 
@@ -73,6 +95,52 @@ class BootCode(list[Instruction]):
                     "No valid instruction: "
                     f"{self[self.ptr].type} at {self.ptr}"
                 )
+            
+
+    def repair(self) -> None:
+        '''Keep swapping nop and jmp instructions until the code does no
+        longer contain a loop'''
+        for swap_instr in self:
+            if swap_instr.type == 'nop':
+                # Temporarily change instruction
+                swap_instr.type = 'jmp'
+
+                if Gv.test:
+                    pprint([ins.type for ins in self])
+
+                # Terminate if no loop
+                if not self.detect_loop():
+                    return
+
+                # Restore instruction
+                swap_instr.type = 'nop'
+                # Re_initialise
+                self.reset()
+
+            elif swap_instr.type == 'jmp':
+                # Temporarily change instruction
+                swap_instr.type = 'nop'
+
+                if Gv.test:
+                    pprint([ins.type for ins in self])
+
+                # Terminate if no loop
+                if not self.detect_loop():
+                    return
+
+                # Restore instruction
+                swap_instr.type = 'jmp'
+                # Re_initialise
+                self.reset()
+
+        raise RuntimeError('No valid code found')
+
+
+    def reset(self) -> None:
+        '''Reset to initial values'''
+        self.ptr = 0
+        self.acc = 0
+        self.visited = set()
 
 
 # Functions
@@ -96,6 +164,11 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    bootcode = BootCode(lines)
+    bootcode.repair()
+
+    return bootcode.acc
 
     return 'part_2 ' + __name__
 
