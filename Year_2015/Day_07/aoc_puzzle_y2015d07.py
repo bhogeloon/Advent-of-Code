@@ -31,7 +31,6 @@ store that on wire b and redo the evaluation part.
 # Imports
 from __future__ import annotations
 from pprint import pprint
-import re
 
 
 # Constants
@@ -123,7 +122,7 @@ class Gate:
 
     def get_operand(self, word: str):
         '''Return either an int value or a Wire object'''
-        if re.fullmatch(r'\d+', word):
+        if word.isdigit():
             return int(word)
         else:
             return self.wires.add_wire(word)
