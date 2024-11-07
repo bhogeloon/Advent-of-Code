@@ -4,13 +4,16 @@ Year 2022, Day 9
 Problem description: See https://adventofcode.com/20xx/day/xx
 
 The following classes are used:
-- Knot: represents a knot (head or tail or - in part 2 - an in between tail)
+- Knot: represents a knot (head or tail or - in part 2 - an in between Knot)
 - RopeGrid: A Grid2D class, containing boolean values. If the tail has passed
     a point in the grid, the value will become True
 
 Part 1: Update the head Knot according to the input and then follow the
 specified rules for the tail Knot. Afterwards mark the tail spot.
 
+Part 2: For this part, each knot in each step has to follow the one before it
+after it has moved. After the last (tail) has moved, the position is marked
+again.
 """
 
 # Imports
