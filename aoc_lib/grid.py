@@ -106,6 +106,20 @@ class Grid2D(Grid):
                     self.grid[x,y] = func(x=x, y=y, **kwargs)
 
 
+    def print(self, seperator = '') -> None:
+        '''Print the values of all cells. Each cell in a row is seperated by
+        the seporator (default is '')'''
+        for y in range(self.sizes[1]):
+            line = ''
+
+            for x in range(self.sizes[0]):
+                line += str(self.grid[x,y]) + seperator
+
+            print(line)
+
+        print()
+
+
 class Grid3D(Grid):
     '''Grid class for 3 dimensional grids'''
 
