@@ -12,6 +12,13 @@ The following classes are used:
 Part 1: Loop through all possible PhaseSequences and register the output
 after running the code for each amplifier. Then return the maximum.
 
+Part 2:
+Modifications:
+- output as a deque
+- input optional at initialisation
+- run_program returns a deque instead of an int
+- Use one function to run program.
+
 """
 
 # Imports
@@ -37,21 +44,26 @@ class Gv():
 class PhaseSequences(list[list[int]]):
     '''This class contains all Phase sequences possible. It is a list of lists
     of ints'''
-    def __init__(self) -> None:
-        used_nrs = set()
-        all_nrs = {0,1,2,3,4}
+    def __init__(self, seq_range:list[int] | None = None) -> None:
+        if seq_range == None:
+            self.seq_range = [0,1,2,3,4]
+        else:
+            self.seq_range = seq_range
 
-        for a in range(5):
+        used_nrs = set()
+        all_nrs = set(self.seq_range)
+
+        for a in self.seq_range:
             used_nrs.add(a)
-            for b in range(5):
+            for b in self.seq_range:
                 if b in used_nrs:
                     continue
                 used_nrs.add(b)
-                for c in range(5):
+                for c in self.seq_range:
                     if c in used_nrs:
                         continue
                     used_nrs.add(c)
-                    for d in range(5):
+                    for d in self.seq_range:
                         if d in used_nrs:
                             continue
                         used_nrs.add(d)
@@ -80,11 +92,43 @@ class PhaseSequences(list[list[int]]):
             thrust_outputs.append(thrust)
 
         return max(thrust_outputs)
+    
+
+    def get_max_thrust_w_feedback(self, line: str) -> int:
+        '''Get the maximum thrust level using the feedback loop'''
+        thrust_outputs = []
+
+        for phase_seq in self:
+            # The amplifier processes
+            amps = []
+
+            # The I/O queue
+            queue = deque([0])
+
+            # For each phase, first start processes
+            for phase in phase_seq:
+                intcode = Intcode(line, deque())
+                amps.append(intcode)
+                queue.appendleft(phase)
+                queue = intcode.run_program_w_feedback(queue)
+
+            # Now repeat until no more processes running
+            while not amps[4].completed:
+                for amp in amps:
+                    queue = amp.run_program_w_feedback(queue)
+
+            thrust_outputs.append(queue[-1])
+
+        return max(thrust_outputs)
 
 
 class Intcode():
     '''Intcode class from day 5. Uses the same logic. However the input
     is now mandatory and is a deque'''
+
+    # This class variable will keep track of the amount of processes running
+    processes_running = 0
+
     def __init__(self, line:str, input: deque) -> None:
         self.codes = [ int(nr) for nr in line.split(',') ]
         # Indicates where the program is
@@ -95,6 +139,12 @@ class Intcode():
         # Create output list
         self.output = []
 
+        # Indicates that the code is completed, i.e. 99 has been detected
+        self.completed = False
+
+        # Increase the number of processes runnning
+        self.processes_running += 1
+
 
     def fix(self, val1 = 12, val2 = 2) -> None:
         '''Fix the initial values'''
@@ -103,10 +153,12 @@ class Intcode():
 
 
     def run_program(self) -> int:
-        '''Run through the program and return diagnostic code'''
+        '''Run through the program and return diagnostic code.'''
         while True:
             # If we detect value 99, end program
             if self.codes[self.ptr] == 99:
+                self.completed = True
+                self.processes_running -= 1
                 # Return last code on the output queue
                 return self.output[-1]
 
@@ -115,6 +167,51 @@ class Intcode():
             modes = self.codes[self.ptr] // 100
 
             if opcode == 3:
+                self.get_input()
+            elif opcode == 4:
+                self.store_output(modes)
+            elif opcode in (1,2,7,8):
+                self.operator(opcode, modes)
+            elif opcode in (5,6):
+                self.jump(opcode, modes)
+            else:
+                raise RuntimeError(f'Unkown opcode {opcode}')
+            
+
+    def run_program_w_feedback(self, input: deque) -> int:
+        '''Run through the program and return the list of output codes.
+        The program stops if the program halts or if the input queue
+        is empty. In the latter case the program can be resumed in a later
+        stage.'''
+        # If the program has already stopped, just return the current input
+        # queue
+        if self.completed:
+            return input
+        
+        # First, the input queue is replaced by a new one:
+        self.input = input
+
+        # Now purge the output queue, in case the program is restarted
+        self.output = []
+        
+        # Then start the loop
+        while True:
+            # If we detect value 99, end program
+            if self.codes[self.ptr] == 99:
+                self.completed = True
+                self.processes_running -= 1
+                # Return last code on the output queue
+                return deque(self.output)
+
+            # Determine opcode and modes
+            opcode = self.codes[self.ptr] % 100
+            modes = self.codes[self.ptr] // 100
+
+            if opcode == 3:
+                # If the input queue is empty, terminate
+                if len(self.input) == 0:
+                    return deque(self.output)
+                
                 self.get_input()
             elif opcode == 4:
                 self.store_output(modes)
@@ -237,6 +334,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv.test = kwargs.get('test', False)
+
+    phase_seqs = PhaseSequences([5,6,7,8,9])
+
+    return phase_seqs.get_max_thrust_w_feedback(lines[0])
 
     return 'part_2 ' + __name__
 
