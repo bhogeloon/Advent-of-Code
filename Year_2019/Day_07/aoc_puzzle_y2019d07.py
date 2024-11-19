@@ -4,8 +4,11 @@ Year 2019, Day 7
 Problem description: See https://adventofcode.com/2019/day/7
 
 The following classes are used:
-- Intcode: Same class as in day 5, with one small modification: the input
-    argument is now not a single number but a deque of numbers.
+- Intcode: Same class as in day 5, with a couple of small modifications: 
+    - The input argument is now not a single number but a deque of numbers.
+    - Also the output queue is a deque and the return value of the 
+        run_program method is now the complete output queue instead of the
+        latest value. This is a requirement of part 2.
 - PhaseSequences: At initialisation, it creates all possible lists of Phase
     Sequences, using numbers 0 - 4.
 
@@ -13,11 +16,27 @@ Part 1: Loop through all possible PhaseSequences and register the output
 after running the code for each amplifier. Then return the maximum.
 
 Part 2:
-Modifications:
-- output as a deque
-- input optional at initialisation
-- run_program returns a deque instead of an int
-- Use one function to run program.
+The main challenge of this puzzle was to interpret the puzzle text. 
+It was clear to me that I had to keep a seperate Intcode instance for each
+amplifier, but the following points puzzled me:
+- When do we pass control over to the next Amp?
+- When do we break the loop? When all processes have halted or just Amp E?
+- What do we pass on when the program halts?
+- What happens if we pass on control to a program which is already halted?
+
+In my first attempt I decided to pass on control immediately after an output
+was detected, which was then the input for the next Amp (along with the Phase 
+setting in the first run). When the program halts, just pass on the latest 
+value in the output queue. I guess there it went wrong as it could be that that
+value was already passed earlier.
+
+Then I started to dig around a bit and found an alternative solution: Keep
+running every process until you are out of input. I guess that more simulates
+a multithreading approach. As soon as you're out of input or the program halts,
+just pass on the entire output queue as input queue to the next process.
+When the program has already been halted, just pass on the input queue as is 
+(which is effectively the same as skipping the process entirely).
+The feedback loop ends as soon as Amp E halts. This produced the right result.
 
 """
 
@@ -87,7 +106,7 @@ class PhaseSequences(list[list[int]]):
             # For each phase
             for phase in phase_seq:
                 intcode = Intcode(line, deque([phase,thrust]))
-                thrust = intcode.run_program()
+                thrust = intcode.run_program()[-1]
 
             thrust_outputs.append(thrust)
 
@@ -107,15 +126,15 @@ class PhaseSequences(list[list[int]]):
 
             # For each phase, first start processes
             for phase in phase_seq:
-                intcode = Intcode(line, deque())
+                intcode = Intcode(line)
                 amps.append(intcode)
                 queue.appendleft(phase)
-                queue = intcode.run_program_w_feedback(queue)
+                queue = intcode.run_program(queue)
 
             # Now repeat until no more processes running
             while not amps[4].completed:
                 for amp in amps:
-                    queue = amp.run_program_w_feedback(queue)
+                    queue = amp.run_program(queue)
 
             thrust_outputs.append(queue[-1])
 
@@ -125,11 +144,7 @@ class PhaseSequences(list[list[int]]):
 class Intcode():
     '''Intcode class from day 5. Uses the same logic. However the input
     is now mandatory and is a deque'''
-
-    # This class variable will keep track of the amount of processes running
-    processes_running = 0
-
-    def __init__(self, line:str, input: deque) -> None:
+    def __init__(self, line:str, input: deque | None = None) -> None:
         self.codes = [ int(nr) for nr in line.split(',') ]
         # Indicates where the program is
         self.ptr = 0
@@ -137,13 +152,10 @@ class Intcode():
         self.input = input
 
         # Create output list
-        self.output = []
+        self.output = deque()
 
         # Indicates that the code is completed, i.e. 99 has been detected
         self.completed = False
-
-        # Increase the number of processes runnning
-        self.processes_running += 1
 
 
     def fix(self, val1 = 12, val2 = 2) -> None:
@@ -152,33 +164,7 @@ class Intcode():
         self.codes[2] = val2
 
 
-    def run_program(self) -> int:
-        '''Run through the program and return diagnostic code.'''
-        while True:
-            # If we detect value 99, end program
-            if self.codes[self.ptr] == 99:
-                self.completed = True
-                self.processes_running -= 1
-                # Return last code on the output queue
-                return self.output[-1]
-
-            # Determine opcode and modes
-            opcode = self.codes[self.ptr] % 100
-            modes = self.codes[self.ptr] // 100
-
-            if opcode == 3:
-                self.get_input()
-            elif opcode == 4:
-                self.store_output(modes)
-            elif opcode in (1,2,7,8):
-                self.operator(opcode, modes)
-            elif opcode in (5,6):
-                self.jump(opcode, modes)
-            else:
-                raise RuntimeError(f'Unkown opcode {opcode}')
-            
-
-    def run_program_w_feedback(self, input: deque) -> int:
+    def run_program(self, input: deque | None = None) -> int:
         '''Run through the program and return the list of output codes.
         The program stops if the program halts or if the input queue
         is empty. In the latter case the program can be resumed in a later
@@ -189,19 +175,19 @@ class Intcode():
             return input
         
         # First, the input queue is replaced by a new one:
-        self.input = input
+        if input != None:
+            self.input = input
 
         # Now purge the output queue, in case the program is restarted
-        self.output = []
+        self.output = deque()
         
         # Then start the loop
         while True:
             # If we detect value 99, end program
             if self.codes[self.ptr] == 99:
                 self.completed = True
-                self.processes_running -= 1
                 # Return last code on the output queue
-                return deque(self.output)
+                return self.output
 
             # Determine opcode and modes
             opcode = self.codes[self.ptr] % 100
@@ -210,7 +196,7 @@ class Intcode():
             if opcode == 3:
                 # If the input queue is empty, terminate
                 if len(self.input) == 0:
-                    return deque(self.output)
+                    return self.output
                 
                 self.get_input()
             elif opcode == 4:
@@ -326,7 +312,6 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
     phase_seqs = PhaseSequences()
 
     return phase_seqs.get_max_thrust(lines[0])
-
     return 'part_1 ' + __name__
 
 
