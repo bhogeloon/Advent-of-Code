@@ -13,6 +13,7 @@ from datetime import datetime
 from aoc_lib.aoc_file_handling import read_input
 from aoc_lib.aoc_file_handling import get_aoc_module
 from aoc_lib.aoc_file_handling import get_input_file
+import logging
 
 sys.path.append(os.getcwd() + '/aoc_lib')
 
@@ -61,8 +62,19 @@ argp.add_argument(
     help="Use old format",
 )
 
+argp.add_argument(
+    '--debug', '-b', action='store_true',
+    help='Turn on debug messages'
+)
+
 args = argp.parse_args()
 
+# Configure the logger
+logger = logging.getLogger(__name__)
+logging.basicConfig(format='%(message)s',level=logging.INFO)
+
+if args.debug:
+    logger.setLevel(logging.DEBUG)
 
 if args.year:
     YEAR = args.year
@@ -109,9 +121,15 @@ if args.old_format:
     print("Solution:", aoc_module.get_solution(lines))
 else:
     if PART == 'a':
-        print("Solution part 1:", aoc_module.get_solution_part1(lines,test=args.test))
+        print(
+            "Solution part 1:",
+            aoc_module.get_solution_part1(lines,test=args.test,logger=logger)
+        )
     else:
-        print("Solution part 2:", aoc_module.get_solution_part2(lines,test=args.test))
+        print(
+            "Solution part 2:",
+            aoc_module.get_solution_part2(lines,test=args.test,logger=logger)
+        )
 
 
 # Print time consumed
