@@ -67,6 +67,11 @@ argp.add_argument(
     help='Turn on debug messages'
 )
 
+argp.add_argument(
+    '--log_file', '-l', action='store_true',
+    help='Store logging in filename aoc.log'
+)
+
 args = argp.parse_args()
 
 # Configure the logger
@@ -98,6 +103,15 @@ if args.old_format:
     MODULE = f"{YEAR_DIR}.{DAY_DIR}.aoc_d{DAY:02d}{PART}"
 else:
     MODULE = f"{YEAR_DIR}.{DAY_DIR}.{get_aoc_module(DIR)}"
+
+# Open log file if required
+if args.log_file:
+    LOG_FILE = f"{DIR}/aoc.log"
+    logger.addHandler(logging.FileHandler(
+        LOG_FILE,
+        encoding='utf-8',
+        mode='w',
+    ))
 
 # Import current script
 aoc_module = import_module(MODULE)
