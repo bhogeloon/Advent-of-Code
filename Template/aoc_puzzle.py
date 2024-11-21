@@ -28,8 +28,8 @@ class Gv():
 
     def __init__(self, test: bool, logger: Logger, **kwargs) -> None:
         '''Initialize the global variables'''
-        self.test = test
-        self.log = logger
+        Gv.test = test
+        Gv.log = logger
 
 
 # Classes
