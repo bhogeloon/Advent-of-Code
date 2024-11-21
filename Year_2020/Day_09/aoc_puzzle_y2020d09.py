@@ -11,6 +11,13 @@ Check for all numbers (skipping the preamble) whether any combination of the
 past 25 numbers add up with this number as result. As soon as one is found for
 which this is not possible, report that number.
 
+Part 2:
+Consider the number found in Part 1. Now go through the list of numbers again
+and for each number, look at the numbers immediately following that one. Add
+all those numbers together until you either find the right ('invalid') number,
+or you exceed it. Once you find it, look at all the numbers you have added
+together and take the max and min and add them together.
+
 """
 
 # Imports
@@ -89,6 +96,42 @@ class XmasSeq(list[int]):
         raise RuntimeError('All numbers are valid')
 
 
+    def find_weakness(self) -> int:
+        '''Find the weakness'''
+
+        # Find invalid number (so part 1)
+        invalid_nr =  self.validate()
+
+        # Go through all numbers
+        for (i, nr) in enumerate(self):
+            # The sum to be checked
+            total = nr
+            nrs = [nr]
+            sum_found = False
+
+            # Go through the remainder of numbers and add them to the total
+            # one by one, until we either find the right number or we go
+            # over it (as the numbers should be contiguous)
+            for j in range(i+1, len(self)):
+                # Increase sum
+                total += self[j]
+                nrs.append(self[j])
+
+                # If total matches
+                if total == invalid_nr:
+                    sum_found = True
+                    break
+                # If total exceeds invalid number
+                elif total > invalid_nr:
+                    break
+
+            # If we found the number, we add up the min and max
+            if sum_found:
+                return max(nrs) + min(nrs)
+
+        raise RuntimeError('No match found')
+
+
 # Functions
 
 
@@ -97,7 +140,6 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 1 solution'''
 
     Gv(**kwargs)
-    print(Gv.test, Gv.log)
 
     xmas_seq = XmasSeq(lines)
 
@@ -110,6 +152,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    xmas_seq = XmasSeq(lines)
+
+    return xmas_seq.find_weakness()
 
     return 'part_2 ' + __name__
 
