@@ -1,24 +1,46 @@
 """
-Year 2022, Day 10
+Year 20xx, Day xx
 
-Problem description: See https://adventofcode.com/2022/day/10
+Problem description: See https://adventofcode.com/20xx/day/xx
+
+The following class is being used:
+- Cpu: The processor, containing an X register and maintaining the amount
+    of cycles. It also a a list of instructions.
+
+Part 1: Go through each instruction, increasing the cycles and updating the
+X register. If a cycle in the check-point list is reach, calculate the signal
+strength. Report the sum of the signal strengths.
 
 """
 
 # Imports
+from __future__ import annotations
 from pprint import pprint
+from logging import Logger
 from collections import deque
 import re
+
 
 # Constants
 
 CHECK_POINTS = (20, 60, 100, 140, 180, 220)
 
+
 # Global variables
 
 class Gv():
-    '''Class to store global variables that are immutable, so they can be
-    reassigned within a function'''
+    '''Class to store global variables'''
+
+    # Variable that can be used to indicate we're using the test input
+    test = False
+
+    # Variable that will be used for holding the logger object
+    log = None
+
+    def __init__(self, test: bool, logger: Logger, **kwargs) -> None:
+        '''Initialize the global variables'''
+        Gv.test = test
+        Gv.log = logger
 
 
 # Classes
@@ -90,9 +112,14 @@ class Cpu():
         print(self.picture)
 
 
+# Functions
+
+
 # Main functions
 def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
-    '''Main function'''
+    '''Main function for the part 1 solution'''
+
+    Gv(**kwargs)
 
     cpu = Cpu(lines)
     cpu.process_instrs()
@@ -103,13 +130,11 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
 
 
 def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
-    '''Main function'''
+    '''Main function for the part 2 solution'''
 
-    cpu = Cpu(lines)
-    cpu.process_instrs()
-    cpu.print()
+    Gv(**kwargs)
 
-    # return 'part_2 ' + __name__
+    return 'part_2 ' + __name__
 
 
 if __name__ == '__main__':
