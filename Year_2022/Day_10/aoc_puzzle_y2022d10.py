@@ -11,6 +11,11 @@ Part 1: Go through each instruction, increasing the cycles and updating the
 X register. If a cycle in the check-point list is reach, calculate the signal
 strength. Report the sum of the signal strengths.
 
+Part 2: Keep track of a picture showing #'s and .'s as provided in the puzzle
+input.
+To determine whether to draw a # or ., calculate the 'sprite' position from
+the X register relative to the horizontal CRT position.
+
 """
 
 # Imports
@@ -57,7 +62,9 @@ class Cpu():
         self.instrs = deque(lines)
         # Signal strengths
         self.sig_strs = {}
-        self.picture = ''
+        # Keeps track of the picture in part 2
+        self.picture = '\n'
+        # horizontal crt position
         self.crt_pos = 0
 
 
@@ -91,13 +98,16 @@ class Cpu():
         if self.cycle in (CHECK_POINTS):
             self.sig_strs[self.cycle] = self.cycle*self.x
 
+        # If crt position is within 'Sprite range'
         if self.crt_pos >= self.x-1 and self.crt_pos <= self.x+1:
             self.picture += '#'
         else:
             self.picture += '.'
 
+        # Increase hor postion
         self.crt_pos += 1
 
+        # If 40 is reached, reset hor position
         if self.crt_pos == 40:
             self.picture += '\n'
             self.crt_pos = 0
@@ -106,10 +116,6 @@ class Cpu():
     def get_total_sig_strs(self) -> int:
         '''Return the sum of all signal strength in each check point'''
         return sum(self.sig_strs.values())
-    
-
-    def print(self) -> None:
-        print(self.picture)
 
 
 # Functions
@@ -134,7 +140,12 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
 
     Gv(**kwargs)
 
-    return 'part_2 ' + __name__
+    cpu = Cpu(lines)
+    cpu.process_instrs()
+    
+    return cpu.picture
+
+    # return 'part_2 ' + __name__
 
 
 if __name__ == '__main__':
