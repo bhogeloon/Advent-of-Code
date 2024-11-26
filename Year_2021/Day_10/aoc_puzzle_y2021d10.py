@@ -15,6 +15,13 @@ then we move on to the next line.
 At the end of each line, the stack should be empty, otherwise we have
 an incomplete line. For part 1, this can be ignored, so just return score 0.
 
+Part 2:
+So now we keep the same code to check for corrupt lines, but instead
+of keeping the score, we just ignore them.
+For the ones that make it to the end, we will investigate the remaining 
+characters in the stack and calculate all the score for those by peeling off the
+remainder of the stack.
+
 """
 
 # Imports
@@ -24,7 +31,7 @@ from logging import Logger
 
 # Constants
 
-SCORE_TABLE = {
+CORRUPT_SCORE_TABLE = {
     ')': 3,
     ']': 57,
     '}': 1197,
@@ -36,6 +43,13 @@ MATCH_TABLE = {
     '[': ']',
     '{': '}',
     '<': '>',
+}
+
+COMPL_SCORE_TABLE = {
+    '(': 1,
+    '[': 2,
+    '{': 3,
+    '<': 4,
 }
 
 
@@ -77,7 +91,7 @@ class Chunks:
             # Now investigate closing brackets one by one
             # If this is the first char, return the matching score
             if len(self.chunk_stack) == 0:
-                return SCORE_TABLE[char]
+                return CORRUPT_SCORE_TABLE[char]
             
             # else if the character matches the current opening bracket
             # continue with the rest of the line
@@ -85,10 +99,23 @@ class Chunks:
                 continue
 
             # else return score
-            return SCORE_TABLE[char]
+            return CORRUPT_SCORE_TABLE[char]
         
         # If nothing invalid find, return 0
         return 0
+
+
+    def get_completion_score(self) -> int:
+        '''Return the completion score result for this line'''
+        Gv.log.debug(f'{self.line}: {self.chunk_stack}')
+
+        line_score = 0
+
+        for i in range(len(self.chunk_stack)):
+            line_score *= 5
+            line_score += COMPL_SCORE_TABLE[self.chunk_stack.pop()]
+
+        return line_score
 
 
 class NavigationalSubsystem(list[Chunks]):
@@ -108,7 +135,43 @@ class NavigationalSubsystem(list[Chunks]):
         return total
 
 
+    def get_completion_score(self) -> int:
+        '''Return the middle score of all completion score results'''
+        all_results = []
+
+        for chunks in self:
+            inv_score = chunks.get_invalid_score()
+
+            # If not an invalid score it will be 0
+            if inv_score == 0:
+                all_results.append(chunks.get_completion_score())
+
+        return middle_score(all_results)
+    
+
 # Functions
+
+def middle_score(my_list: list) -> int:
+    '''This function determines the middle score of a list
+    of integers'''
+    list_len = len(my_list)
+
+    # Raise exception if not on odd number
+    if (list_len % 2) == 0:
+        raise RuntimeError("Even number of scores: {}".format(list_len))
+
+    # Sort the list
+    my_list.sort()
+
+    # Determine the middle entry
+    middle = list_len // 2
+
+    Gv.log.debug(f'{list_len} {middle}')
+
+    for my_value in my_list:
+        Gv.log.debug(my_value)
+
+    return my_list[middle]
 
 
 # Main functions
@@ -128,6 +191,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    system = NavigationalSubsystem(lines)
+
+    return system.get_completion_score()
 
     return 'part_2 ' + __name__
 
