@@ -12,6 +12,8 @@ The following classes are used:
 Part 1: Use the eval function to test the condition and if True update the
 register value.
 
+Part 2: Keep track of the highest register value using a class variable in 
+Instructions.
 """
 
 # Imports
@@ -84,9 +86,17 @@ class Instruction:
         if eval(eval_str):
             self.cpu[self.target_reg_id] += self.inc
 
+            # Update highest value if necessarry
+            if self.cpu[self.target_reg_id] > Instructions.highest_regval:
+                Instructions.highest_regval = self.cpu[self.target_reg_id]
+
 
 class Instructions(list[Instruction]):
     '''List container class of Intruction objects'''
+    # Class variables
+    # Keep track of the highest value ever registered
+    highest_regval = 0
+
     def __init__(self, lines: list[str]) -> None:
         # cpu is a dict containing all register values
         self.cpu = {}
@@ -122,6 +132,11 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    instrs = Instructions(lines)
+    instrs.process()
+
+    return Instructions.highest_regval
 
     return 'part_2 ' + __name__
 
