@@ -10,6 +10,13 @@ Part 1: First sort the list on joltage level and then add the built in device
 (max+3). Then walk through the list, registering the amount of times the 
 difference is either 1, 2 or 3. Then at the end mulitply the 1 and 3 values.
 
+Part 2: For this we use a recursive function. To calculate the number of chains
+possible, we look at each next value within the range of 3 and calculate the 
+number of chains from there, and so on, until we reach the end.
+To prevent that we make the same recursive calculation over and over again, we
+keep track of the result from each index. This way, the result could be
+calculated in less than 0.05 seconds.
+
 """
 
 # Imports
@@ -46,14 +53,19 @@ class Adapters(list):
         for line in lines:
             self.append(int(line))
 
+        # Add 0 as a start value
+        self.append(0)
+        # Add the built-in adapter: max+3
+        self.append(max(self)+3)
         # Sort them, so they can be processed in order (so not to skip any)
         self.sort()
-        # Add the built-in adapter: max+3
-        self.append(max(self.adapters)+3)
 
         # Current output joltage
         self.current_joltage = 0
-        self.nr_chains = 0
+
+        # Register the different chains starting from a certain index in 
+        # the list
+        self.chains_from_here = {}
 
 
     def calculate_chain(self):
@@ -72,23 +84,32 @@ class Adapters(list):
         return nr_diff.get(1, 0) * nr_diff.get(3, 0)
 
 
-    def _connect(self, index = 0) -> None:
+    def get_nr_of_chains(self, index=0) -> int:
+        '''Recursive function to calculate the number of chains from a 
+        given list index'''
+        # if at the end of the chain
         if index == len(self) - 1:
-            self.nr_chains += 1
-            return
+            return 1
 
+        # If the number for the chain has already been calculated
+        if index in self.chains_from_here.keys():
+            return self.chains_from_here[index]
+
+        nr_of_chains = 0
+
+        # Go through the remainder of the list from this index
         for j in range(index+1, len(self)):
-            if j - index > 3:
+            # Stop as soon as the difference is larger than 3
+            if self[j] - self[index] > 3:
                 break
 
-            self._connect(j)
+            # Start calculating from the next position
+            nr_of_chains += self.get_nr_of_chains(j)
 
+        # Register the amount chains from this index
+        self.chains_from_here[index] = nr_of_chains
 
-    def get_nr_of_chains(self) -> int:
-        self.nr_chains = 0
-        self._connect()
-
-        return self.nr_chains
+        return nr_of_chains
 
 
 # Functions
@@ -111,6 +132,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    adapters = Adapters(lines)
+
+    return adapters.get_nr_of_chains()
 
     return 'part_2 ' + __name__
 
