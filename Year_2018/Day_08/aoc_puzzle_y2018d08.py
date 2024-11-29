@@ -16,7 +16,16 @@ root Node and processed all input numbers in order:
     - number of metadata entries
     - Then recursivelt create the new childs from the same input deque
     - finally read the metadata entries (updating the sum)
-    
+
+Part 2: To calculate the node value (for root to start with), a new recursive
+function is used (Node.get_value()). It does the following:
+- If the value is already known, simply return it.
+- If there are no childs, return the sum of all the metadata entries.
+- If there are childs, look at the metadata entries and for each one:
+    - If it exceeds the number of childs, ignore it.
+    - Otherwise (recursively) calculate the node value for that child node.
+- In the end, return the total.
+
 """
 
 # Imports
@@ -60,6 +69,10 @@ class Node:
         self.childs = []
         self.metadata = []
 
+        # Set node value to None, indicating that it hasn't yet been
+        # calculated
+        self.node_value = None
+
         # Retrieve nr of childs
         nr_of_childs = input.popleft()
 
@@ -76,6 +89,33 @@ class Node:
             Node.metadata_sum += metadata_entry
             self.metadata.append(metadata_entry)
             Gv.log.debug(f'Adding metadata: {metadata_entry}')
+
+
+    def get_value(self) -> int:
+        '''Calculate the Node value'''
+        # If the value is already calculated, just return it
+        if self.node_value is not None:
+            return self.node_value
+        
+        # If no child nodes, set node value to sum of metadata
+        if len(self.childs) == 0:
+            self.node_value = sum(self.metadata)
+            return self.node_value
+
+        self.node_value = 0
+
+        # Calculate node value for all references child nodes
+        for ref in self.metadata:
+            # If outside range, ignore:
+            if ref > len(self.childs):
+                Gv.log.debug(f'Ignoring {ref}')
+                continue
+
+            # otherwise add the node value for the child
+            Gv.log.debug(f'Adding for child {ref}')
+            self.node_value += self.childs[ref-1].get_value()
+
+        return self.node_value
 
 
 # Functions
@@ -100,6 +140,12 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    input = deque([int(nr) for nr in lines[0].split()])
+
+    root = Node(input)
+
+    return root.get_value()
 
     return 'part_2 ' + __name__
 
