@@ -18,6 +18,14 @@ have been inspected for each Monkey.
 After 20 rounds, get the two most active monkeys by looking at the amount of
 inspected items. Multiply these together.
 
+Part 2: Basically this is the same function but then for 10000 rounds and 
+without the division by 3 part. However, without any additional measures, this
+would cause the worry levels to explode. So what I did was to calculate the
+common denominator by multiplying all the test denominators together. After
+every item operation, the modulus for the common denominator is applied to the
+result. This does not affect the division test, which is in the end what we
+are interested in. This keeps the values within boundaries.
+
 """
 
 # Imports
@@ -132,10 +140,13 @@ class Monkey():
         # Apply operation
         item = self.operation(item)
 
+        # As long as we don't have to worry (as in part 1)
         if not monkeys.worry:
             # Divide worry level by 3
             item = item // 3
 
+        # Calculate the remainder when dividing to the common denominator
+        # This is to keep the item value from exploding
         item = item % monkeys.common_mod
 
         # If division is possible perform True action, otherwise False
@@ -152,7 +163,9 @@ class Monkeys(list[Monkey]):
     '''Container class for monkeys'''
 
     def __init__(self, lines: deque[str], worry = False) -> None:
+        # Indicates that we need to worry now (in part 2)
         self.worry = worry
+        # To store the common denominat
         self.common_mod = 1
         # Index number of Monkey
         nr = 0
@@ -160,6 +173,7 @@ class Monkeys(list[Monkey]):
         while len(lines) > 0:
             self.append(Monkey(lines, nr))
             nr += 1
+            # Update common denominator
             self.common_mod = self.common_mod * self[-1].modulus
 
 
@@ -208,6 +222,15 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    monkeys = Monkeys(deque(lines), worry=True)
+
+    for i in range(10000):
+        monkeys.round()
+        if i % 100 == 0:
+            Gv.log.debug(i)
+
+    return monkeys.get_monkey_business()
 
     return 'part_2 ' + __name__
 
