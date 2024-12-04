@@ -16,6 +16,9 @@ flashed.
 At the end of each step, walk through the matrix again and reset all values
 greater than 9 to 0. Also reset all dumbo flashed flags to False.
 
+Part 2: The same as part 1, but the loop continues as long as not all Dumbo
+objects are in flashed state. Count the number of loops.
+
 """
 
 # Imports
@@ -66,6 +69,10 @@ class Cave(Grid2D):
             func=lambda x=None,y=None,lines=lines: Dumbo(lines[y][x]),
         )
         self.dumbos = self.grid
+
+        # This attribute will be used to track if all dumbos have flashed
+        # simultanuously (as in part 2)
+        self.all_flashed = False
 
 
     def flash_dumbo(self, x:int, y:int) -> int:
@@ -118,34 +125,59 @@ class Cave(Grid2D):
         return nr_of_flashes
 
 
+    def flash_all_dumbos(self) -> int:
+        '''Flash all dumbos and return the number of flashes'''
+        nr_of_flashes = 0
+
+        # Increase the points in the matrix
+        for y in range(self.y_size):
+            for x in range(self.x_size):
+                # Increase the number
+                self.dumbos[x,y].level += 1
+
+                # If bigger than 9 and not already flashed
+                if (
+                    self.dumbos[x,y].level > 9 and
+                    not self.dumbos[x,y].flashed
+                ):
+                    # (x,y) not in flash_points:
+                    nr_of_flashes += self.flash_dumbo(x, y)
+
+        self.all_flashed = True
+
+        # Now go through the matrix again:
+        for dumbo in self.dumbos.flat:
+            if dumbo.level > 9:
+                dumbo.level = 0
+                dumbo.flashed = False
+            # If a non-flashed dumbo has been find, set all_flashed to False
+            else:
+                self.all_flashed = False
+
+        return nr_of_flashes
+
+
     def get_nr_of_flashes(self):
         '''Get the Number of Flashes'''
         nr_of_flashes = 0
 
         # Perform 100 steps
         for step in range(STEPS):
-            # Increase the points in the matrix
-            for y in range(self.y_size):
-                for x in range(self.x_size):
-                    # Increase the number
-                    self.dumbos[x,y].level += 1
-
-                    # If bigger than 9 and not already flashed
-                    if (
-                        self.dumbos[x,y].level > 9 and
-                        not self.dumbos[x,y].flashed
-                    ):
-                        # (x,y) not in flash_points:
-                        nr_of_flashes += self.flash_dumbo(x, y)
-
-            # Now go through the matrix again:
-            for dumbo in self.dumbos.flat:
-                if dumbo.level > 9:
-                    dumbo.level = 0
-                    dumbo.flashed = False
+            nr_of_flashes += self.flash_all_dumbos()
 
         return nr_of_flashes
 
+
+    def get_all_flashed(self) -> int:
+        '''Return the number of steps after which all dumbos have flashed'''
+        steps = 0
+
+        while not self.all_flashed:
+            steps += 1
+            self.flash_all_dumbos()
+
+        return steps
+    
 
 # Functions
 
@@ -167,6 +199,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    cave = Cave(lines)
+
+    return cave.get_all_flashed()
 
     return 'part_2 ' + __name__
 
