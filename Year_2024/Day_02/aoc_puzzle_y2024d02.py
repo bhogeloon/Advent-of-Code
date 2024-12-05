@@ -51,12 +51,12 @@ class Report(list[int]):
     def __init__(self, line: str) -> None:
         self.extend([int(lvl) for lvl in line.split()])
 
-        # Order can be 'asc', 'dec' or 'unk'(own)
-        self.order = 'unk'
-
 
     def is_safe(self) -> bool:
         '''Check if this report is safe'''
+        # Order can be 'asc', 'dec' or 'unk'(own)
+        self.order = 'unk'
+
         for i in range(len(self)-1):
             # First calculate the difference
             diff = self[i+1] - self[i]
@@ -95,8 +95,6 @@ class Report(list[int]):
         # Now remove a level one by one and check again
         for i in range(len(self)):
             dampened_report = deepcopy(self)
-            # Set the order back to unknown
-            dampened_report.order = 'unk'
             del dampened_report[i]
             # Gv.log.debug(dampened_report)
 
