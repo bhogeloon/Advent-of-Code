@@ -45,7 +45,7 @@ class DiagReport(Grid2D):
 
         super().__init__(
             sizes=(self.x_size,self.y_size),
-            func=lambda x=None,y=None,lines=lines: lines[y][x],
+            input_lines=lines,
         )
 
         self.bins = self.grid

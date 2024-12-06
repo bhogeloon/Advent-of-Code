@@ -66,7 +66,8 @@ class Cave(Grid2D):
         self.x_size = len(lines[0])
         super().__init__(
             sizes=(self.x_size,self.y_size),
-            func=lambda x=None,y=None,lines=lines: Dumbo(lines[y][x]),
+            input_lines=lines,
+            cell_class=Dumbo,
         )
         self.dumbos = self.grid
 

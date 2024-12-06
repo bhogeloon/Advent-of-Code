@@ -62,7 +62,8 @@ class Grid(Grid2D):
         self.x_size = len(lines[0])
         super().__init__(
             sizes=(self.x_size,self.y_size),
-            func=lambda x=None,y=None,lines=lines: GridSpot(lines[y][x]),
+            input_lines=lines,
+            cell_class=GridSpot,
         )
 
 
