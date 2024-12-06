@@ -167,6 +167,18 @@ class Grid2D(Grid):
         print()
 
 
+    def __str__(self) -> str:
+        '''String representation'''
+        result = '\n'
+
+        for y in range(self.sizes[1]):
+            for x in range(self.sizes[0]):
+                result += self.grid[x,y]
+            result += '\n'
+
+        return result
+
+
 class Grid3D(Grid):
     '''Grid class for 3 dimensional grids'''
 
