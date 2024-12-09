@@ -8,6 +8,10 @@ No classes are used.
 Part 1: Extract all the mul statements from the string and multiply the
 numbers. Add everything up.
 
+Part 2: Change the search pattern to match on either mul or do or don't. Then 
+process the list of instructions, using a do flag to determine whether to
+actually add the mul statement or ignore it.
+
 """
 
 # Imports
@@ -60,6 +64,31 @@ def get_sum_of_muls(lines: list[str]) -> int:
     return total
 
 
+def get_sum_of_muls_do_dont(lines: list[str]) -> int:
+    '''Get the sum of all mul expressions, taking into account the do's and
+    don'ts'''
+    # First glue all lines together
+    big_line = ''.join(lines)
+
+    # Then get all correct instructions
+    pattern = r"mul\(\d+,\d+\)|don't\(\)|do\(\)"
+    all_instrs = re.findall(pattern, big_line)
+    do = True
+    total = 0
+
+    # Go through all instructions
+    for instr in all_instrs:
+        if instr == "do()":
+            do = True
+        elif instr == "don't()":
+            do = False
+        elif do:
+            m = re.fullmatch(r'mul\((\d+),(\d+)\)', instr)
+            total += int(m.group(1)) * int(m.group(2))
+
+    return total
+
+
 # Main functions
 def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 1 solution'''
@@ -75,6 +104,8 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    return get_sum_of_muls_do_dont(lines)
 
     return 'part_2 ' + __name__
 
