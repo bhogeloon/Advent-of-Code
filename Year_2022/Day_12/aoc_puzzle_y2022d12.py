@@ -3,7 +3,35 @@ Year 2022, Day 12
 
 Problem description: See https://adventofcode.com/2022/day/12
 
-<Include solution description>
+The following classes are used:
+- Location: A grid location which has a certain height.
+- Map: Grid class containing Location objects.
+
+Part 1: I started at the endpoint and worked my way back to the starting point 
+using a recursive function. So starting from the endpoint, a location is
+investigated as follows:
+- If the height difference is too much, return to the previous location
+- If this point is already in the current investigation path, return (to avoid
+    a loop)
+- If the current path length is not smaller than the one previously 
+    detected, return. Otherwise update the "dist_to_end".
+- After this, start investigating all neighbor locations in the same way
+When this process finished, all locations that have some sort of connection to
+the endpoint, should have a "dist_to_end" value, so then it is just a question
+of retrieving this value from the start point.
+This process takes about 1.5 minutes.
+
+Part 2: As I have done the investigations of all points already in part 1,
+part 2 just consists of retrieving the dist_to_end values of all starting
+points and return the minimum. As a result of this approach, also part 2 takes 
+about 1.5 minutes.
+
+Note: The process that I'm using is not entirely optimal. When a point is
+investigated for the second time, it will again recursively investigate all
+neighbors.
+I made an attempt to improve on this (see branch y2022d12_alt), but in the end
+did not get the same result. Also the time gain was not what I had hoped, so I
+gave up on that one.
 
 """
 
@@ -81,7 +109,6 @@ class Map(Grid2D):
                     self.startpoint = (x,y)
                 elif lines[y][x] == 'E':
                     self.endpoint = (x,y)
-                    # pprint(self.endpoint)
 
 
     def start_path_search(self) -> int:
@@ -95,15 +122,19 @@ class Map(Grid2D):
     
 
     def get_shortest_path(self) -> int:
+        '''Get the shortes path, taking into account all a points'''
+        # First repeat the part 1 investigation
         e_x, e_y = self.endpoint
         self.investigate_path(e_x, e_y, 27)
 
         path_lengths = []
 
+        # Now just retrieve the dist_to_end value for all a points 
         for location in self.locations.flat:
             if location.height == 1:
                 path_lengths.append(location.dist_to_end)
 
+        # Return the minimum
         return min(path_lengths)
 
 
@@ -111,7 +142,7 @@ class Map(Grid2D):
         '''Investigate the path for this point towards the endpoint'''
         location = self.locations[x,y]
 
-        # If the height of this location is too large
+        # If the height of this location is too small
         if location.height < height - 1:
             # pprint(height, location.height)
             return
