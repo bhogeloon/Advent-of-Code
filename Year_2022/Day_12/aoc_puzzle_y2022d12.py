@@ -14,10 +14,12 @@ from logging import Logger
 from grid import Grid2D
 import sys
 
-sys.setrecursionlimit(2000)
+sys.setrecursionlimit(10000)
 
 # Constants
 
+# Very Large Number. Start value of the distances
+VLN = 99999999999
 
 # Global variables
 
@@ -54,8 +56,8 @@ class Location():
         else:
             self.height = ord(indicator) - ord('a') + 1
 
-        self.dist_to_start = 999999999
-        self.dist_to_end = 999999999
+        self.dist_to_start = VLN
+        self.dist_to_end = VLN
 
 
 class Map(Grid2D):
@@ -84,6 +86,114 @@ class Map(Grid2D):
                     # pprint(self.endpoint)
 
 
+    def find_path_from_start(self, start:tuple|None=None) -> int:
+        '''Find the path from the given start point (by default the original
+        starting point will be used). Return the path length'''
+        if start is None:
+            s_x, s_y = self.startpoint
+        else:
+            s_x, s_y = start
+
+        self.get_next_in_path(s_x,s_y,1)
+        return self.locations[s_x,s_y].dist_to_end
+
+        e_x, e_y = self.endpoint
+        # Return te distance to start from the end point
+        return self.locations[e_x,e_y].dist_to_start
+
+
+    def get_next_in_path(self, x:int, y:int, height: int):
+        '''Investigate the path for this point towards the endpoint'''
+        location = self.locations[x,y]
+        msg = f'inv. loc. {x}, {y}: dist_to_end: {location.dist_to_end}'
+        Gv.log.debug(msg)
+
+        # If the height of this location is too large
+        if location.height > height + 1:
+            msg = f'\tHeight diff too large: {location.height-height}. '
+            msg += f'Returning {VLN}'
+            Gv.log.debug(msg)
+            return VLN
+
+        # If this point is already part of the current path
+        if (x,y) in self.cur_path:
+            msg = f'\tpoint in path. returning {VLN}'
+            Gv.log.debug(msg)
+            return VLN
+        
+        # If the distance to end is already known, just return it + 1
+        if location.dist_to_end < VLN:
+            msg = f'\tenddist already known. returning {location.dist_to_end+1}'
+            Gv.log.debug(msg)
+            return location.dist_to_end + 1
+
+        # If the endpoint is found, return 1 (as dist to endpoint)
+        if location.endpoint:
+            msg = f'\tEnd point found. returning 1'
+            Gv.log.debug(msg)
+            return 1
+        
+        dist_to_start = len(self.cur_path)
+
+        # If the distance is larger (or equal) than already detected
+        if dist_to_start >= location.dist_to_start:
+            msg = f'\tdist_to_start not smaller than known. '
+            msg += f'known: {location.dist_to_start} '
+            msg += f'new: {dist_to_start}. Returning {VLN}'
+            Gv.log.debug(msg)
+            return VLN
+
+        # Update distance to start
+        location.dist_to_start = dist_to_start
+        # Append this location to the current path
+        self.cur_path.append((x,y))
+
+        # Now start to investigate the neighbors
+        if x > 0:
+            msg = f'\t\tMoving to {x-1}, {y}.'
+            Gv.log.debug(msg)
+            dist_to_end = self.get_next_in_path(x-1,y, location.height)
+            msg = f'\t\t{x}, {y}: result from {x-1}, {y}: {location.dist_to_end}'
+            Gv.log.debug(msg)
+            if dist_to_end < location.dist_to_end:
+                location.dist_to_end = dist_to_end
+
+        if y > 0:
+            msg = f'\t\tMoving to {x}, {y-1}.'
+            Gv.log.debug(msg)
+            dist_to_end = self.get_next_in_path(x,y-1, location.height)
+            msg = f'\t\t{x}, {y}: result from {x-1}, {y}: {dist_to_end}'
+            Gv.log.debug(msg)
+            if dist_to_end < location.dist_to_end:
+                location.dist_to_end = dist_to_end
+
+        if x < self.x_size - 1:
+            msg = f'\t\tMoving to {x+1}, {y}.'
+            Gv.log.debug(msg)
+            dist_to_end = self.get_next_in_path(x+1,y, location.height)
+            msg = f'\t\t{x}, {y}: result from {x-1}, {y}: {dist_to_end}'
+            Gv.log.debug(msg)
+            if dist_to_end < location.dist_to_end:
+                location.dist_to_end = dist_to_end
+
+        if y < self.y_size - 1:
+            msg = f'\t\tMoving to {x}, {y+1}.'
+            Gv.log.debug(msg)
+            dist_to_end = self.get_next_in_path(x,y+1, location.height)
+            msg = f'\t\t{x}, {y}: result from {x-1}, {y}: {dist_to_end}'
+            Gv.log.debug(msg)
+            if dist_to_end < location.dist_to_end:
+                location.dist_to_end = dist_to_end
+
+        # Remove this location from the path before giving the control back
+        self.cur_path.pop()
+
+        # Return the distance to end + 1
+        msg = f'\t{x}, {y}: After investigating: Returning {location.dist_to_end+1}'
+        Gv.log.debug(msg)
+        return location.dist_to_end + 1
+
+
     def start_path_search(self) -> int:
         '''Start the search starting from the fixed Start point'''
         e_x, e_y = self.endpoint
@@ -98,6 +208,18 @@ class Map(Grid2D):
         e_x, e_y = self.endpoint
         self.investigate_path(e_x, e_y, 27)
 
+        path_lengths = []
+
+        for location in self.locations.flat:
+            if location.height == 1:
+                path_lengths.append(location.dist_to_end)
+
+        return min(path_lengths)
+
+
+    def get_shortest_path_from_any_a(self) -> int:
+        '''Find the shortes path from any a point as starting point'''
+        self.find_path_from_start()
         path_lengths = []
 
         for location in self.locations.flat:
@@ -161,7 +283,7 @@ def get_solution_part1(lines: list[str], *args, **kwargs) -> int:
 
     map = Map(lines)
 
-    return map.start_path_search()
+    return map.find_path_from_start()
 
     return 'part_1 ' + __name__
 
