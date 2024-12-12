@@ -9,6 +9,9 @@ The following class is used:
 Part 1: Walk through the grid searching for letter X. When found go in all
 directions and see if you can form the word XMAS.
 
+Part 2: Walk through the grid searching for the letter A. When found check
+the cross positions, looking for MAS or SAM.
+
 """
 
 # Imports
@@ -20,6 +23,8 @@ from grid import Grid2D
 # Constants
 
 WORD = 'XMAS'
+MAS = 'MAS'
+SAM = 'SAM'
 
 
 # Global variables
@@ -74,6 +79,38 @@ class WordSearch(Grid2D):
         return words
 
 
+    def find_x_mas(self) -> int:
+        '''Find all cross MAS words'''
+        words = 0
+
+        for y in range(self.y_size):
+            for x in range(self.x_size):
+                # Skip if not A
+                if self.letters[x,y] != MAS[1]:
+                    continue
+
+                # Check on borders
+                if (
+                    x == 0 or x == self.x_size-1 or
+                    y == 0 or y == self.y_size-1
+                ):
+                    continue
+
+                # Check cross word
+                x_word1 = self.letters[x-1,y-1] + self.letters[x,y]
+                x_word1 += self.letters[x+1,y+1]
+                x_word2 = self.letters[x-1,y+1] + self.letters[x,y]
+                x_word2 += self.letters[x+1,y-1]
+
+                if (
+                    (x_word1 == MAS or x_word1 == SAM) and
+                    (x_word2 == MAS or x_word2 == SAM)
+                ):
+                    words += 1
+
+        return words
+
+
     def is_xmas(self, x, y, dir_x, dir_y) -> bool:
         '''Return True if you can find XMAS in this direction'''
         # Skip if you go past borders
@@ -118,6 +155,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    ws = WordSearch(lines)
+
+    return ws.find_x_mas()
 
     return 'part_2 ' + __name__
 
