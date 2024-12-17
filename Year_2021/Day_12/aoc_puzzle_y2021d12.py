@@ -17,6 +17,10 @@ list. If we see the end as the destination, we found a proper path. If we see a
 small cave, which is already in the list, we have found a dead end and we are 
 not going to proceed.
 
+Part 2: If a small duplicate is found, permit one duplicate. Keep track of that
+one with a special flag. This flag needs to be cleared at the end of the 
+recursive function instance.
+
 """
 
 # Imports
@@ -68,29 +72,57 @@ class Maze(dict[str,Cave]):
                     self[caves[i]].neighbours.append(self[caves[1-i]])
 
         self.current_path = []
+        # Flag to indicate that a small duplicat is already present
+        self.small_dupl_present = False
 
 
-    def calculate_path(self, start_point: str) -> int:
+    def calculate_path(self, start_point: str, part=1) -> int:
         '''Recursive function to calculate the path'''
-        # If this point is a small cage we already visited, don't bother
-        if start_point.islower() and start_point in self.current_path:
-            return 0
-
         # If the current start_point is 'end', then we have a valid path
         if start_point == 'end':
+            Gv.log.debug(self.str_path())
             return 1
+
+        # Flag to indicate that a small duplicate has been detected, so the
+        # generic flag needs to be cleared at the end of this cycle
+        dupl_in_this_cycle = False
+
+        # If this point is a small cage we already visited (twice in part 2), 
+        # don't bother
+        if start_point.islower() and start_point in self.current_path:
+            if part == 1 or start_point == 'start' or self.small_dupl_present:
+                return 0
+            elif self.current_path.count(start_point) > 1:
+                return 0
+            else:
+                self.small_dupl_present = True
+                dupl_in_this_cycle = True
 
         # Then add this point to the path
         self.current_path.append(start_point)
         paths_found = 0
 
         for end_cave in self[start_point].neighbours:
-            paths_found += self.calculate_path(end_cave.name)
+            paths_found += self.calculate_path(end_cave.name,part=part)
         
         # Now remove the current point before returning
         self.current_path.pop()
 
+        # Reset the duplicate flag if required:
+        if dupl_in_this_cycle:
+            self.small_dupl_present = False
+
         return paths_found
+    
+
+    def str_path(self) -> str:
+        '''String representation of current path'''
+        result = ''
+        for cave_name in self.current_path:
+            result += f'{cave_name},'
+
+        result += 'end'
+        return result
 
 
 # Functions
@@ -113,6 +145,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    maze = Maze(lines)
+
+    return maze.calculate_path('start',part=2)
 
     return 'part_2 ' + __name__
 
