@@ -10,6 +10,11 @@ The following classes are used:
 
 Part 1: Move the ship according to each instruction and read the position it
 has finished in (it started at 0,0)
+
+Part 2: For the NEWS actions, the actions changes in altering the Waypoint (wp)
+of the Ship rather than the position. Only for an F action, the position is
+actually changed.
+
 """
 
 # Imports
@@ -57,11 +62,14 @@ class Instructions(deque[Instruction]):
 
 class Ship:
     '''Represents a ship with a pos(ition), a dir(ection) and a reference
-    to the Instructions'''
+    to the Instructions.
+    For part 2, I added an attriute wp (Waypoint)'''
     def __init__(self, lines: list[str]) -> None:
         self.pos = (0,0)
         # Initial direction East
         self.dir = (1,0)
+        # Initial Waypoint
+        self.wp = (10,1)
         self.instructions = Instructions(lines)
 
 
@@ -115,6 +123,55 @@ class Ship:
         return abs(self.pos[0]) + abs(self.pos[1])
 
 
+    def move_wp(self):
+        '''Move with a single instruction using the Waypoint method'''
+        instruction = self.instructions.popleft()
+
+        # If we need to change direction
+        if instruction.action == 'R' or instruction.action == 'L':
+            nr_turns = instruction.amount // 90
+            if instruction.action == 'R':
+                for i in range(nr_turns):
+                    self.wp = (self.wp[1], -self.wp[0])
+            elif instruction.action == 'L':
+                for i in range(nr_turns):
+                    self.wp = (-self.wp[1], self.wp[0])
+
+            return
+
+        # Move ship according to wp and amount
+        if instruction.action == 'F':
+            self.pos = (
+                self.pos[0] + instruction.amount * self.wp[0],
+                self.pos[1] + instruction.amount * self.wp[1],
+            )
+            return
+
+        # Set the direction of the Waypoint change
+        if instruction.action == 'E':
+            chdir = (1,0)
+        elif instruction.action == 'S':
+            chdir = (0,-1)
+        elif instruction.action == 'W':
+            chdir = (-1,0)
+        elif instruction.action == 'N':
+            chdir = (0,1)
+        else:
+            raise RuntimeError('Invalid command {}'.format(instruction.action))
+
+        # Change the waypoint
+        self.wp = (
+            self.wp[0] + instruction.amount * chdir[0],
+            self.wp[1] + instruction.amount * chdir[1],
+        )
+
+
+    def move_all_wp(self):
+        '''Execute all Instructions according to the Waypoint method'''
+        while len(self.instructions) > 0:
+            self.move_wp()
+
+
 # Functions
 
 
@@ -136,6 +193,11 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    ship = Ship(lines)
+    ship.move_all_wp()
+
+    return ship.get_manhattan_dist()
 
     return 'part_2 ' + __name__
 
