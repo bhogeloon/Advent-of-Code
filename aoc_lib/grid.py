@@ -52,6 +52,7 @@ class Grid1D(Grid):
         if cell_class != None:
             for x in range(self.sizes):
                 self.grid[x] = cell_class()
+                self.grid[x].x = x
 
 
 class Grid2D(Grid):
@@ -108,6 +109,8 @@ class Grid2D(Grid):
             for y in range(self.sizes[1]):
                 for x in range(self.sizes[0]):
                     self.grid[x,y] = cell_class()
+                    self.grid[x,y].x = x
+                    self.grid[x,y].y = y
 
 
     def use_input_lines(self, input_lines, cell_class, int_value=False) -> None:
@@ -120,10 +123,16 @@ class Grid2D(Grid):
             return int(lines[y][x])
 
         def _cell_no_int(x=None,y=None,lines=input_lines):
-            return cell_class(lines[y][x])
+            obj = cell_class(lines[y][x])
+            obj.x = x
+            obj.y = y
+            return obj
 
         def _cell_int(x=None,y=None,lines=input_lines):
-            return cell_class(int(lines[y][x]))
+            obj = cell_class(int(lines[y][x]))
+            obj.x = x
+            obj.y = y
+            return obj
 
         if cell_class is None:
             if int_value:
@@ -151,6 +160,8 @@ class Grid2D(Grid):
             for y in range(self.sizes[1]):
                 for x in range(self.sizes[0]):
                     self.grid[x,y] = func(x=x, y=y, **kwargs)
+                    self.grid[x,y].x = x
+                    self.grid[x,y].y = y
 
 
     def print(self, seperator = '') -> None:
@@ -203,7 +214,10 @@ class Grid3D(Grid):
             for z in range(self.sizes[2]):
                 for y in range(self.sizes[1]):
                     for x in range(self.sizes[0]):
-                        self.grid[x,y] = cell_class()
+                        self.grid[x,y,z] = cell_class()
+                        self.grid[x,y,z].x = x
+                        self.grid[x,y,z].y = y
+                        self.grid[x,y,z].z = z
 
 
 if __name__ == '__main__':
