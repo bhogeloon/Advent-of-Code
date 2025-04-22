@@ -11,6 +11,9 @@ Part 1: A recursive function is being used to check if the result is equal to
 calculated result. Each time, the function is called with adding the next
 argument as well as multiplying it.
 
+Part 2: Add a concatenate operator and add that as third option. This will 
+get the result in a little under 5 seconds.
+
 """
 
 # Imports
@@ -70,16 +73,28 @@ class CalibrationEquotation():
             result_so_far=result_so_far*self.arguments[offset+1]
         ):
             return True
+        
+        # return False if no concatenation is used
+        if not CalibrationEquotations.use_conc:
+            return False
+
+        if self.get_calibration(
+            offset=offset+1,
+            result_so_far=conc(result_so_far,self.arguments[offset+1])
+        ):
+            return True
 
         return False
     
 
 class CalibrationEquotations(list[CalibrationEquotation]):
     '''List container class of CalibrationEquotation objects'''
-    def __init__(self, lines: list[str]):
+    def __init__(self, lines: list[str], use_conc=False):
         for line in lines:
             self.append(CalibrationEquotation(line))
 
+        # Determines whether to use concatenation (part 2)
+        CalibrationEquotations.use_conc=use_conc
 
     def get_total_calibration(self) -> int:
         '''Return the total calibration result'''
@@ -93,6 +108,10 @@ class CalibrationEquotations(list[CalibrationEquotation]):
 
 
 # Functions
+
+def conc(a:int, b:int) -> int:
+    '''Returns an integer by string concatenation of a and b'''
+    return int(str(a) + str(b))
 
 
 # Main functions
@@ -112,6 +131,10 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    caleqs = CalibrationEquotations(lines, use_conc=True)
+
+    return caleqs.get_total_calibration()
 
     return 'part_2 ' + __name__
 
