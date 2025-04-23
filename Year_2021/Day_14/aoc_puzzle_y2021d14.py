@@ -197,6 +197,7 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     pol.cnt20 = Counter(pol.pol)
 
     # Do the final extended insertion
+    Gv.log.debug("Starting final cycle (only count)")
     pol.insert(rules, only_count=True)
 
     return pol.get_high_low_diff()
