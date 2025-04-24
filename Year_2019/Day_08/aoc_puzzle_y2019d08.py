@@ -11,6 +11,11 @@ Part 1: Read all the data and fill each image sequentially. Then create a
 counter object for the image data. Find the one with the least amount of zeroes
 and report the amount of 1's multiplied by the amount of 2's.
 
+Part 2: Create a new layer with all 2's. Then go through each pixel and 
+inspect all image layers until a 1 or 0 is encountered. That will be the value
+of the pixel in the new layer. Finally print the layer turning all white (1) 
+fields into a #
+
 """
 
 # Imports
@@ -24,7 +29,7 @@ from collections import deque, Counter
 # Constants
 
 IMG_SIZE = (25,6)
-IMG_SIZE_TEST = (3,2)
+IMG_SIZE_TEST = (2,2)
 
 
 # Global variables
@@ -59,6 +64,24 @@ class Layer(Grid2D):
         self.cnt = Counter(self.grid.flat)
 
 
+    def __str__(self) -> str:
+        '''String representation'''
+        result = '\n'
+
+        for y in range(self.sizes[1]):
+            for x in range(self.sizes[0]):
+                if self.grid[x,y] == 1:
+                    result += '#'
+                elif self.grid[x,y] == 0:
+                    result += ' '
+                else:
+                    result += '.'
+            result += '\n'
+
+        return result
+
+
+
     def get_1_times_2(self) -> int:
         '''Return the number of 1 digits multiplied by the number of 2
         digits'''
@@ -67,7 +90,7 @@ class Layer(Grid2D):
             return 0
         
         return self.cnt[1] * self.cnt[2]
-
+    
 
 class Image(list[Layer]):
     '''List class containing several Layer objects'''
@@ -106,7 +129,29 @@ class Image(list[Layer]):
                 raise Exception("Found duplicate")
 
         return zero_layer
-    
+
+
+    def stack(self) -> Layer:
+        '''Stack all layers and produce a layer that is the result of the 
+        stack'''
+        if Gv.test:
+            layer_size = IMG_SIZE_TEST
+        else:
+            layer_size = IMG_SIZE
+
+        result_inp = '2' * (layer_size[0] * layer_size[1])
+
+        result_layer = Layer(deque(result_inp), layer_size)
+
+        for y in range(layer_size[1]):
+            for x in range(layer_size[0]):
+                for layer in self:
+                    if layer.grid[x,y] != 2:
+                        result_layer.grid[x,y] = layer.grid[x,y]
+                        break
+
+        return result_layer
+
 
 # Functions
 
@@ -139,6 +184,11 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
 
     Gv(**kwargs)
 
+    img_data = deque(lines[0])
+    img = Image(img_data)
+
+    return(str(img.stack()))
+    
     return 'part_2 ' + __name__
 
 
