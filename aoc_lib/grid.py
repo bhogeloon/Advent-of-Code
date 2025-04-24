@@ -184,7 +184,7 @@ class Grid2D(Grid):
 
         for y in range(self.sizes[1]):
             for x in range(self.sizes[0]):
-                result += self.grid[x,y]
+                result += str(self.grid[x,y])
             result += '\n'
 
         return result
