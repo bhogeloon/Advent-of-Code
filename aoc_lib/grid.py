@@ -160,8 +160,9 @@ class Grid2D(Grid):
             for y in range(self.sizes[1]):
                 for x in range(self.sizes[0]):
                     self.grid[x,y] = func(x=x, y=y, **kwargs)
-                    self.grid[x,y].x = x
-                    self.grid[x,y].y = y
+                    if type(self.grid[x,y]).__module__ != 'builtins':
+                        self.grid[x,y].x = x
+                        self.grid[x,y].y = y
 
 
     def print(self, seperator = '') -> None:
