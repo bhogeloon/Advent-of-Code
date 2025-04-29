@@ -45,7 +45,7 @@ class Gv():
 # Classes
 
 class Location():
-    '''An location on the map with a frequency and an x and y coordinate'''
+    '''A location on the map with a frequency and an x and y coordinate'''
     def __init__(self, freq: str):
         if freq == '.':
             self.freq = None
@@ -53,11 +53,12 @@ class Location():
             self.freq = freq
 
         # Indicates whether an antinode will be present
-        self.antinode = False
+        self.antinode = 0
 
 
 class Frequencies(dict[str,list[Location]]):
-    '''Dict class with frequence as key pointing to a list of antenna locations'''
+    '''Dict class with frequence as key pointing to a list of antenna 
+    locations'''
     def __init__(self, map: Map):
         for loc in map.grid.flat:
             if loc.freq is not None:
@@ -87,13 +88,12 @@ class Map(Grid2D):
         result = 0
 
         for loc in self.grid.flat:
-            if loc.antinode:
-                result += 1
+            result += loc.antinode
 
         return result
 
 
-    def calulate_antinodes(self) -> None:
+    def calulate_antinodes(self, part=1) -> None:
         '''Calculate the positions of the antinodes'''
         for (freq, antennas) in self.freqs.items():
             # ignore if only one antenna
@@ -111,20 +111,16 @@ class Map(Grid2D):
                         f"Calculating coords for ({antennas[i].x},"
                         f"{antennas[i].y}), ({antennas[j].x},"
                         f"{antennas[j].y}), freq: {freq}")
-                    antinode_coords.extend(self.get_new_coord(
-                        (antennas[i].x, antennas[i].y),
-                        (antennas[j].x, antennas[j].y)
-                    ))
-
-
-            # Add antinodes if possible
-            for c in antinode_coords:
-                if (c[0] >= 0 and c[0] < self.size_x and 
-                    c[1] >= 0 and c[1] < self.size_y):
-                    self.grid[c[0],c[1]].antinode = True
-                    Gv.log.debug(f"Adding antinode at ({c[0]},{c[1]})")
-                else:
-                    Gv.log.debug(f"Skipping for: ({c[0]},{c[1]})")
+                    if part == 1:
+                        antinode_coords.extend(self.get_new_coord(
+                            (antennas[i].x, antennas[i].y),
+                            (antennas[j].x, antennas[j].y)
+                        ))
+                    else:
+                        antinode_coords.extend(self.get_new_coord2(
+                            (antennas[i].x, antennas[i].y),
+                            (antennas[j].x, antennas[j].y)
+                        ))
 
 
     def get_new_coord(self, c1:tuple[int], c2: tuple[int]) -> list[tuple[int]]:
@@ -156,8 +152,111 @@ class Map(Grid2D):
             new_y2 = min(y1,y2) - abs(y1-y2)
             new_y1 = max(y1,y2) + abs(y1-y2)
 
-        result.append((new_x1, new_y1))
-        result.append((new_x2, new_y2))
+        self.store_coords((new_x1,new_y1))
+        self.store_coords((new_x2,new_y2))
+
+        return result
+    
+
+    def store_coords(self, coords: tuple[int]) -> None:
+        '''Store the coords if they are within the grid'''
+        if self.is_in_grid(coords):
+            self.grid[coords[0],coords[1]].antinode += 1
+            Gv.log.debug(f"Increasing antinode for ({coords[0]},{coords[1]}) "
+                f"to {self.grid[coords[0],coords[1]].antinode}")
+
+
+    def get_new_coord2(self, c1:tuple[int], c2: tuple[int]) -> list[tuple[int]]:
+        '''Extrapolate the 2 points on both sides and return a list
+        of new coordinates'''
+        result = []
+        (x1,y1) = c1
+        (x2,y2) = c2
+
+        # Take into account the different directions
+        if x1 == x2:
+            # extend up
+            new_x = x1
+            cur_y = min(y1,y2)
+            while cur_y >= 0:
+                new_y = cur_y - abs(y1-y2)
+                if new_y >= 0:
+                    result.append((new_x,new_y))
+                cur_y = new_y
+
+            # extend down
+            cur_y = max(y1,y2)
+            while cur_y < self.size_y:
+                new_y = cur_y + abs(y1-y2)
+                if new_y < self.size_y:
+                    result.append((new_x,new_y))
+                cur_y = new_y
+                
+        elif y1 == y2:
+            # extend to left
+            new_y = y1
+            cur_x = min(x1,x2)
+            while cur_x >= 0:
+                new_x = cur_x - abs(x1-x2)
+                if new_x >= 0:
+                    result.append((new_x,new_y))
+                cur_x = new_x
+
+            # extend to right
+            cur_x = max(x1,x2)
+            while cur_x < self.size_x:
+                new_x = cur_x + abs(x1-x2)
+                if new_x < self.size_x:
+                    result.append((new_x,new_y))
+                cur_x = new_x
+
+        # Extend left up to right down
+        elif (x1-x2) / (y1-y2) > 0:
+            # Extend to left up
+            cur_x = min(x1,x2)
+            cur_y = min(y1,y2)
+            while cur_x >= 0 and cur_y >=0:
+                new_x = cur_x - abs(x1-x2)
+                new_y = cur_y - abs(y1-y2)
+                if new_x >= 0 and new_y >=0:
+                    result.append((new_x,new_y))
+                cur_x = new_x
+                cur_y = new_y
+
+            # Extend to right down
+            cur_x = max(x1,x2)
+            cur_y = max(y1,y2)
+            while cur_x < self.size_x and cur_y < self.size_y:
+                new_x = cur_x + abs(x1-x2)
+                new_y = cur_y + abs(y1-y2)
+                if new_x < self.size_x and new_y < self.size_y:
+                    result.append((new_x,new_y))
+                cur_x = new_x
+                cur_y = new_y
+
+        # Extend left down to right up
+        else:
+            # Extend to left down
+            cur_x = min(x1,x2)
+            cur_y = max(y1,y2)
+            while cur_x >= 0 and cur_y < self.size_y:
+                new_x = cur_x - abs(x1-x2)
+                new_y = cur_y + abs(y1-y2)
+                if new_x >= 0 and new_y < self.size_y:
+                    result.append((new_x,new_y))
+                cur_x = new_x
+                cur_y = new_y
+
+            # Extend to right up
+            cur_x = max(x1,x2)
+            cur_y = min(y1,y2)
+            while cur_x < self.size_x and cur_y >= 0:
+                new_x = cur_x + abs(x1-x2)
+                new_y = cur_y - abs(y1-y2)
+                if new_x < self.size_x and new_y >= 0:
+                    result.append((new_x,new_y))
+                cur_x = new_x
+                cur_y = new_y
 
         return result
 
@@ -169,7 +268,7 @@ class Map(Grid2D):
         for y in range(self.sizes[1]):
             for x in range(self.sizes[0]):
                 if self.grid[x,y].freq is None:
-                    if self.grid[x,y].antinode:
+                    if self.grid[x,y].antinode > 0:
                         result += '#'
                     else:
                         result += '.'
@@ -202,6 +301,12 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    map = Map(lines)
+    map.calulate_antinodes(part=2)
+    Gv.log.debug(str(map))
+
+    return map.get_unique_antinodes()
 
     return 'part_2 ' + __name__
 

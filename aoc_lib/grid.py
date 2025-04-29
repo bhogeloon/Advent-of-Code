@@ -26,6 +26,21 @@ class Grid():
         self.grid = np.full(self.sizes, default_value)
 
 
+    def is_in_grid(self, coords: tuple[int]) -> bool:
+        '''Returns True if the coord tuple is within the boundaries of the
+        grid'''
+        # Raise exception if wrong dimensions
+        if len(coords) != len(self.sizes):
+            raise Exception(f"Dimension of coord is {len(coords)} and "
+                f"it should be {len(self.sizes)}.")
+        
+        for i,coord in enumerate(coords):
+            if coord < 0 or coord >= self.sizes[i]:
+                return False
+            
+        return True
+
+
 class Grid1D(Grid):
     '''Grid class for one dimensional grids (so a simple array really)'''
 
