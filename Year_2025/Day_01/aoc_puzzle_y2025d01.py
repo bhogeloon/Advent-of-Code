@@ -10,6 +10,12 @@ The following classes are used:
 - Instruction: A single instruction containing the amount of clicks. Positive is
   Right click, negative is Left click
 
+Part 1: Follow the instructions and use the mod function to calculate the new
+position. Count the number of times the new position is 0
+
+Part 2: Use the div function to calculate the amount of times you pass 0. This
+works well for right clicks, but for left clicks (negative) there are some
+exceptions to consider. 
 """
 
 # Imports
