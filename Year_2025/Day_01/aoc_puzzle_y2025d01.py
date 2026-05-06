@@ -49,24 +49,41 @@ class Dial():
         self.max_pos = DIAL_MAX_POS
 
 
-    def get_password(self, instrs: Instructions) -> int:
-        """Return the amount of times the dial ends up on 0"""
+    def get_password(self, instrs: Instructions, method = "orig") -> int:
+        """Return the amount of times the dial ends up on 0.
+        With method other than orig, use the 0x434C49434B method"""
         for instr in instrs:
-            self.move(instr)
+            self.move(instr, method)
 
         return self.zero_cntr
     
 
-    def move(self, instr: Instruction):
-        """Process the instruction"""
-        self.position += instr.amount
+    def move(self, instr: Instruction, method: str):
+        """Process the instruction
+        With method other than orig, use the 0x434C49434B method"""
+        orig_position = self.position
+        new_position = self.position + instr.amount
 
-        self.position %= 100
+        self.position = new_position % 100
 
-        Gv.log.debug(f"Position: {self.position}")
+        if method == "orig":
+            if self.position == 0:
+                self.zero_cntr += 1
+        else:
+            # Check how many times it passes 0
+            cntr_change = new_position // 100
 
-        if self.position == 0:
-            self.zero_cntr += 1
+            # If the new pos is 0 or smaller, add one, but only is orig is not 0
+            if new_position < 0 and orig_position == 0:
+                self.zero_cntr += abs(cntr_change) -1
+            elif new_position <= 0 and self.position == 0:
+                self.zero_cntr += abs(cntr_change) + 1
+            else:
+                self.zero_cntr += abs(cntr_change)
+
+        Gv.log.debug(f"Instr: {instr.amount} Position: {self.position}"
+                     f" Zero counter: {self.zero_cntr}")
+
 
 
 class Instruction():
@@ -78,7 +95,7 @@ class Instruction():
         if dir == "L":
             self.amount = -self.amount
 
-        Gv.log.debug(f"Dir: {dir}, Amount: {self.amount}")
+        # Gv.log.debug(f"Dir: {dir}, Amount: {self.amount}")
 
 
 class Instructions(list):
@@ -109,6 +126,11 @@ def get_solution_part2(lines: list[str], *args, **kwargs) -> int:
     '''Main function for the part 2 solution'''
 
     Gv(**kwargs)
+
+    dial = Dial()
+    instrs = Instructions(lines)
+
+    return dial.get_password(instrs, method="0x434C49434B")
 
     return 'part_2 ' + __name__
 
